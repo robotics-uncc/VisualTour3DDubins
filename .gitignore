@@ -1,0 +1,13 @@
+# python
+__pycache__/
+.ipynb_checkpoints/
+*.py[cod]
+.pytest_cache/
+
+# vscode
+.vscode
+
+# rust
+*.lock
+*.so
+target/
