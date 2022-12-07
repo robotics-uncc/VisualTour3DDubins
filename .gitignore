@@ -3,6 +3,7 @@ __pycache__/
 .ipynb_checkpoints/
 *.py[cod]
 .pytest_cache/
+*.log
 
 # vscode
 .vscode
@@ -11,3 +12,9 @@ __pycache__/
 *.lock
 *.so
 target/
+
+# temporary files
+tmp/
+
+# Submodules
+subs/GLKH
