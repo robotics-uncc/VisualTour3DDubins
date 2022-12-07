@@ -1,0 +1,156 @@
+[{
+    "_id" : "43144f0c-aece-11ec-b849-b742f0b03279",
+    "group" : "vv",
+    "regions" : [ 
+        {
+            "type" : 2,
+            "file" : "data/viewRegions/vv_g_000_t_005_v_000.obj",
+            "rotationMatrix" : [ 
+                [ 
+                    1, 
+                    0, 
+                    0
+                ], 
+                [ 
+                    0, 
+                    0, 
+                    1
+                ], 
+                [ 
+                    0, 
+                    1, 
+                    0
+                ]
+            ],
+            "z" : 230.35143136308,
+            "points" : [ 
+                [ 
+                    -479.841424323394, 
+                    -409.251689403563, 
+                    80.3514313630805
+                ]
+            ],
+            "verificationRegion" : ""
+        }, 
+        {
+            "type" : 2,
+            "file" : "data/viewRegions/vv_g_000_t_005_v_001.obj",
+            "rotationMatrix" : [ 
+                [ 
+                    1, 
+                    0, 
+                    0
+                ], 
+                [ 
+                    0, 
+                    0, 
+                    1
+                ], 
+                [ 
+                    0, 
+                    1, 
+                    0
+                ]
+            ],
+            "z" : 164.977517472447,
+            "points" : [ 
+                [ 
+                    137.930449774817, 
+                    -148.355616342524, 
+                    14.977517472447
+                ]
+            ],
+            "verificationRegion" : ""
+        }, 
+        {
+            "type" : 2,
+            "file" : "data/viewRegions/vv_g_000_t_005_v_002.obj",
+            "rotationMatrix" : [ 
+                [ 
+                    1, 
+                    0, 
+                    0
+                ], 
+                [ 
+                    0, 
+                    0, 
+                    1
+                ], 
+                [ 
+                    0, 
+                    1, 
+                    0
+                ]
+            ],
+            "z" : 207.5,
+            "points" : [ 
+                [ 
+                    377.390468831208, 
+                    501.284136409373, 
+                    57.5
+                ]
+            ],
+            "verificationRegion" : ""
+        }, 
+        {
+            "type" : 2,
+            "file" : "data/viewRegions/vv_g_000_t_005_v_003.obj",
+            "rotationMatrix" : [ 
+                [ 
+                    1, 
+                    0, 
+                    0
+                ], 
+                [ 
+                    0, 
+                    0, 
+                    1
+                ], 
+                [ 
+                    0, 
+                    1, 
+                    0
+                ]
+            ],
+            "z" : 173.5,
+            "points" : [ 
+                [ 
+                    -396.974906999519, 
+                    324.55117129395, 
+                    23.5
+                ]
+            ],
+            "verificationRegion" : ""
+        }, 
+        {
+            "type" : 2,
+            "file" : "data/viewRegions/vv_g_000_t_005_v_004.obj",
+            "rotationMatrix" : [ 
+                [ 
+                    1, 
+                    0, 
+                    0
+                ], 
+                [ 
+                    0, 
+                    0, 
+                    1
+                ], 
+                [ 
+                    0, 
+                    1, 
+                    0
+                ]
+            ],
+            "z" : 150.5,
+            "points" : [ 
+                [ 
+                    690.625, 
+                    -475.78125, 
+                    0.5
+                ]
+            ],
+            "verificationRegion" : ""
+        }
+    ]
+}]
