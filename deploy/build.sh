@@ -18,3 +18,9 @@ cd ../../../deploy
 
 # install packages with conda
 conda env create -n viewplanning --file ../environment.yaml
+
+# build dubins rust
+cd ../dubinsrust
+./build.sh
+
+cd ../../../deploy
