@@ -8,7 +8,7 @@ References
     Lumelsky, V. (2001). Classification of the Dubins set.
     Vana, P., Alves Neto, A., Faigl, J.; MacHaret, D. G. (2020). Minimal 3D Dubins Path with Bounded Curvature and Pitch Angle.
 """
-from viewplanning.dubins.dubinsPath import DubinsPath
+from viewplanning.dubins.dubinsAirplane import DubinsAirplane
 from viewplanning.models import DubinsPathType, Edge2D, Edge3D, Vertex3D, Vertex2D
 from math import nan, inf, sqrt, isinf
 
@@ -21,7 +21,7 @@ MAX_ITER = 1000
 DEFUALT_DUBINS = (nan, nan, nan, nan, nan, nan, nan, inf, DubinsPathType.UNKNOWN, DubinsPathType.UNKNOWN)
 
 
-class VanaAirplane(DubinsPath):
+class VanaAirplane(DubinsAirplane):
     def calculatePath(self, x0, y0, z0, h0, p0, x1, y1, z1, h1, p1, r, faMin, faMax):
         b = 2
         xyEdge, szEdge = self.decoupled(x0, y0, z0, h0, p0, x1, y1, z1, h1, p1, r, r * b)

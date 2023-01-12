@@ -1,9 +1,24 @@
-from .dubinsPath import DubinsPath, DubinsPathType, DubinsFailureException
+'''
+Authors
+-------
+Collin Hague
+
+References
+----------
+Vana, P., Alves Neto, A., Faigl, J.; MacHaret, D. G. (2020). Minimal 3D Dubins Path with Bounded Curvature and Pitch Angle.
+'''
+
+from .dubinsPath import DubinsPathType, DubinsFailureException
 from .dubins_rust import vana_airplane
+from .dubinsAirplane import DubinsAirplane
 from viewplanning.models import Edge3D, Vertex3D
 
 
-class RustVanaAirplane(DubinsPath):
+class RustVanaAirplane(DubinsAirplane):
+    '''
+    Applies Vana to make Dubins airplane paths
+    '''
+
     def __init__(self):
         pass
 
@@ -19,7 +34,7 @@ class RustVanaAirplane(DubinsPath):
             start=start,
             end=end,
             cost=path.cost,
-            aParam= path.a,
+            aParam=path.a,
             bParam=path.b,
             cParam=path.c,
             dParam=path.d,

@@ -25,8 +25,50 @@ LEARNING_DECAY = .05
 # a, b, c, c*, d, e, f, cost, xyType, szType
 DEFUALT_DUBINS = (nan, nan, nan, nan, nan, nan, nan, inf, DubinsPathType.UNKNOWN, DubinsPathType.UNKNOWN)
 
+
 class DubinsAirplane(DubinsPath):
+    '''
+    Applies Obermeyer like path length extensions to Dubins paths to create 3D Dubins airplane paths
+    '''
+
     def calculatePath(self, x0, y0, z0, h0, p0, x1, y1, z1, h1, p1, r, faMin, faMax):
+        '''
+        Calcualte the Dubins airplane path between [x0, y0, z0, h0, p0] and [x1, y1, z1, h1, p1] with turn radius r minimum pitch angle faMin and maximum pitch angle faMax
+
+        Parameters
+        ----------
+        x0: float
+            starting x position
+        y0: float
+            starting y position
+        z0:
+            starting z position
+        h0: float
+            starting heading angle
+        p0: float
+            starting pitch angle
+        x1: float
+            ending x position
+        y1: float
+            ending y position
+        z1: float
+            ending z position
+        h1: float
+            ending heading angle
+        p1: float
+            ending pitch angle
+        r: float
+            turn radius
+        faMin: float
+            minimum pitch angle
+        faMax: float
+            maximum pitch angle
+
+        Returns
+        -------
+        Edge2D
+            Dubins path between two positions
+        '''
         # angles only 0 to 2pi
         h0 = (h0 + 2 * pi) % (2 * pi)
         h1 = (h1 + 2 * pi) % (2 * pi)
@@ -44,7 +86,7 @@ class DubinsAirplane(DubinsPath):
         # add extra path based on flight angle
         # starts creating helix
         deltaZ = z1 - z0
-        minCost = deltaZ / tan(faMax if deltaZ > 0 else faMin)  
+        minCost = deltaZ / tan(faMax if deltaZ > 0 else faMin)
         costDiff = minCost - xyEdge.cost
         cccOptimal = norm2(x0, y0, x0, y0) < 6 * r
         # low case
@@ -78,6 +120,7 @@ class DubinsAirplane(DubinsPath):
             radius=xyEdge.radius,
             radiusSZ=szEdge.radius
         )
+
     def _dubinsHighCase(self, c, cost, minCost, r):
         while minCost > cost:
             increase = pi * 2 * r
@@ -89,7 +132,7 @@ class DubinsAirplane(DubinsPath):
         # https://www.autonomousrobotslab.com/dubins-airplane.html
         pi2 = pi / 2
         dz = z1 - z0
-        # add extra curve at beginning 
+        # add extra curve at beginning
         if dz > 0:
             pathTypeStr = pathType.name
             center = None
@@ -100,8 +143,8 @@ class DubinsAirplane(DubinsPath):
                 dir = -1
             else:
                 pathTypeStr = pathTypeStr[0] + 'R' + pathTypeStr[1:]
-            cx, cy = x0 + r * cos(h0 + dir * pi2),  y0 + r * sin(h0 + dir * pi2)
-            zx, zy = cx  + r * cos(dir * pi2 + h0),  cy + r * sin(dir * pi2 + h0)
+            cx, cy = x0 + r * cos(h0 + dir * pi2), y0 + r * sin(h0 + dir * pi2)
+            zx, zy = cx + r * cos(dir * pi2 + h0), cy + r * sin(dir * pi2 + h0)
             thetai = h0 + dir * (psi + pi2)
             edge = super().solveType(zx, zy, thetai, x1, y1, h1, r, DubinsPathType.fromString(pathTypeStr[1:]))
             error = edge.cost + abs(r * (psi + pi2)) - dz / tan(flightAngle)
@@ -109,7 +152,7 @@ class DubinsAirplane(DubinsPath):
             while abs(error) > PATH_ERROR:
                 psi = psi - error / r * LEARNING_RATE
                 t += 1
-                zx, zy = cx  + r * cos(dir * pi2 + h0),  cy + r * sin(dir * pi2 + h0)
+                zx, zy = cx + r * cos(dir * pi2 + h0), cy + r * sin(dir * pi2 + h0)
                 thetai = h0 + dir * (psi + pi2)
                 edge = super().solveType(zx, zy, thetai, x1, y1, h1, r, DubinsPathType.fromString(pathTypeStr[1:]))
                 error = edge.cost + abs(r * (psi + pi2)) - dz / tan(flightAngle)
@@ -117,7 +160,7 @@ class DubinsAirplane(DubinsPath):
                 if t > 1000 or type == DubinsPathType.UNKNOWN:
                     raise MediumAltitudeOptimizationException()
             return (psi + pi2) * r, edge.aParam, edge.bParam, edge.cParam, edge.cost + (psi + pi2) * r, DubinsPathType.fromString(pathTypeStr)
-        
+
         # add extra curve at end
         else:
             dz *= -1
@@ -146,6 +189,7 @@ class DubinsAirplane(DubinsPath):
                 if t > 1000 or type == DubinsPathType.UNKNOWN:
                     raise MediumAltitudeOptimizationException()
             return edge.aParam, edge.bParam, edge.cParam, (psi + pi2) * r, edge.cost + abs(psi + pi2) * r, DubinsPathType.fromString(pathTypeStr)
+
 
 class MediumAltitudeOptimizationException(Exception):
     pass

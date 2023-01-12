@@ -11,8 +11,36 @@ DEFAULT_DUBINS = (nan, nan, nan, inf, 0)
 
 
 class DubinsPath(object):
+    '''
+    Calculates Dubins paths
+    '''
 
     def calculatePath(self, x0, y0, h0, x1, y1, h1, r, **kwargs):
+        '''
+        Calcualte the Dubins path between [x0, y0, h0] and [x1, y1, h1] with turn radius r
+
+        Parameters
+        ----------
+        x0: float
+            starting x position
+        y0: float
+            starting y position
+        h0: float
+            starting heading angle
+        x1: float
+            ending x position
+        y1: float
+            ending y position
+        h1: float
+            ending heading angle
+        r: float
+            turn radius
+
+        Returns
+        -------
+        Edge2D
+            Dubins path between two positions
+        '''
         x, y, h = self._normalize(x0, y0, h0, x1, y1, h1, r)
         m_cth = cos(h)
         m_sth = sin(h)

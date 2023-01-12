@@ -6,6 +6,10 @@ from argparse import ArgumentParser
 
 
 class MonteCarloExperiments(Subapplication):
+    '''
+    creates a monte caro expeirment from a group of view volumes
+    '''
+
     def __init__(self):
         super().__init__('montecarlo')
         self.description = 'Create a monte carlo experiment.'

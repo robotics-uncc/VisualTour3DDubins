@@ -12,28 +12,26 @@ Collin Hague : chague@uncc.edu
 
 class SolutionPlotter3dPyvista(SolutionPlotter):
     """
-    plots solution to path planning with object avoidance
-
-    plot(volumes: list[Region], edges: list[Edge3D])
+    plot 3D solutions
     """
 
     def __init__(self, environment: pv.PolyData):
+        '''
+        Parameters
+        ----------
+        environment: pv.PolyData
+            environment to plot solutions in
+        '''
         self.environment = environment
 
     def plot(self, volumes: 'list[Region]', edges: 'list[Edge3D]', **kwargs):
         """
-        plots solution to path planning with object avoidance
-
         Parameters
         ----------
-        environment: PolyData
-            environment the agent transverses
-        start: ndarray
-            start orientation of vehicle R^3 x S^2
-        end: ndarray
-            end orientation of vehicle R^3 x S^2
-        paths: list[DubinsPaths]
-            list of paths for the vehicle to follow
+        volumes: list[Region]
+            list of view volumes to plot
+        edges: list[Edge3D]
+            list of Dubins airplane paths to plot
         """
         plotter = pv.Plotter()
         if self.environment is not None:
@@ -68,4 +66,5 @@ class SolutionPlotter3dPyvista(SolutionPlotter):
         plotter.show()
 
     def savePlot(self, path):
+        '''save plot not implemented'''
         pass

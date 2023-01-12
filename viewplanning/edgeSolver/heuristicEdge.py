@@ -7,6 +7,10 @@ from viewplanning.dubins.vanaAirplane import VanaAirplane
 
 
 class HeuristicEdge(EdgeSolver):
+    '''
+    Uses lower bound edge cost for Dubins airplane
+    '''
+
     def __init__(self,
                  faMin: float,
                  faMax: float,

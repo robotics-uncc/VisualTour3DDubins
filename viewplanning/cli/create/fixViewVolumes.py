@@ -9,6 +9,10 @@ from viewplanning.cli.create.viewVolumes import modifyMesh
 
 
 class FixViewVolumes(Subapplication):
+    '''
+    fixes broken view volumes
+    '''
+
     def __init__(self):
         super().__init__('fixviewvolumes')
         self.description = 'Repair view volumes broken in creation process.'

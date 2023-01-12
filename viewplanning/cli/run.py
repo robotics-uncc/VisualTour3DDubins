@@ -40,6 +40,10 @@ def _run(experiment: Experiment, dryRun=False):
 
 
 class RunExperiments(Subapplication):
+    '''
+    Runs experiments stored in database
+    '''
+
     def __init__(self):
         super().__init__('run')
         self.description = 'Run all non-completed experiments stored in database or a single non-completed experiment by id.'

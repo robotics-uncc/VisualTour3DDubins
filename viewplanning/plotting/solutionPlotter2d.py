@@ -11,7 +11,21 @@ from viewplanning.sampling import iterateRegions
 
 
 class SolutionPlotter2dRegions(SolutionPlotter):
+    '''
+    Plot 2D solutions
+    '''
+
     def plot(self, regions: 'list[Region]', edges: 'list[Edge2D]', **kwargs):
+        '''
+        Plot 2D Solutions
+
+        Parameters
+        ----------
+        regions: list[Region]
+            list of regions to plot
+        edges: list[Edges]
+            list of edges to plot
+        '''
         fig = plt.figure()
         ax = plt.gca()
         self._plotEdges(edges, ax)

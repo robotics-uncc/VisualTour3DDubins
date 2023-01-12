@@ -6,6 +6,10 @@ from .fixViewVolumes import FixViewVolumes
 
 
 class Create(Subapplication):
+    '''
+    Container for creational application flows
+    '''
+
     def __init__(self):
         super().__init__('create')
         self.subapplications: 'list[Subapplication]' = [

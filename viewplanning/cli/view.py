@@ -11,6 +11,10 @@ import numpy as np
 
 
 class View(Subapplication):
+    '''
+    plots completed experiments
+    '''
+
     def __init__(self):
         super().__init__('view')
         self.description = 'View the results of an experiment.'

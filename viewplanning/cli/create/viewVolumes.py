@@ -21,6 +21,8 @@ RESULTING_FACES = 500
 
 
 class ViewVolumes(Subapplication):
+    '''create view volumes'''
+
     def __init__(self):
         super().__init__('viewvolumes')
         self.description = 'Create view volumes in an environment.'
