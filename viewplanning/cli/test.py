@@ -20,6 +20,7 @@ def run(experiment):
 class TestExperiments(Subapplication):
     def __init__(self):
         super().__init__('test')
+        self.description = 'Load a small set of experiments into the database and execute them.'
 
     def run(self, args):
 

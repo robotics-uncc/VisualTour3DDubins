@@ -42,9 +42,10 @@ def _run(experiment: Experiment, dryRun=False):
 class RunExperiments(Subapplication):
     def __init__(self):
         super().__init__('run')
+        self.description = 'Run all non-completed experiments stored in database or a single non-completed experiment by id.'
 
     def modifyParser(self, parser: ArgumentParser):
-        parser.add_argument('--id', default=None, type=UUID, required=False)
+        parser.add_argument('--id', default=None, type=UUID, required=False, help='UUID of the experiment to run')
         return super().modifyParser(parser)
 
     def run(self, args):

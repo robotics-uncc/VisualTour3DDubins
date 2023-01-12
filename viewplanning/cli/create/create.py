@@ -13,6 +13,7 @@ class Create(Subapplication):
             MonteCarloExperiments(),
             FixViewVolumes(),
         ]
+        self.description = 'Create view volumes or experiments.'
 
     def modifyParser(self, parser: ArgumentParser):
         subparsers = parser.add_subparsers()

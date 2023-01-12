@@ -11,11 +11,12 @@ from viewplanning.cli.create.viewVolumes import modifyMesh
 class FixViewVolumes(Subapplication):
     def __init__(self):
         super().__init__('fixviewvolumes')
+        self.description = 'Repair view volumes broken in creation process.'
 
     def modifyParser(self, parser: ArgumentParser):
-        parser.add_argument('--size', dest='size', default=80, type=float)
-        parser.add_argument('--radius', dest='radius', default=300, type=float)
-        parser.add_argument('--map', dest='map', default='./worldMaps/uptownCharlotte.obj', type=str)
+        parser.add_argument('--size', dest='size', default=80, type=float, help='size of file in kB as broken mesh cutoff')
+        parser.add_argument('--radius', dest='radius', default=300, type=float, help='sensing distance limist for the aircraft')
+        parser.add_argument('--map', dest='map', default='./worldMaps/uptownCharlotte.obj', type=str, help='environment map for the view volumes *.obj')
         super().modifyParser(parser)
 
     def run(self, args):

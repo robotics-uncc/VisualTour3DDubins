@@ -8,9 +8,10 @@ from argparse import ArgumentParser
 class MonteCarloExperiments(Subapplication):
     def __init__(self):
         super().__init__('montecarlo')
+        self.description = 'Create a monte carlo experiment.'
 
     def modifyParser(self, parser: ArgumentParser):
-        parser.add_argument('group', type=str)
+        parser.add_argument('group', type=str, help='target group name to make experiment for')
         super().modifyParser(parser)
 
     def run(self, args):

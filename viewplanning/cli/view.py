@@ -13,12 +13,13 @@ import numpy as np
 class View(Subapplication):
     def __init__(self):
         super().__init__('view')
+        self.description = 'View the results of an experiment.'
 
     def modifyParser(self, parser: ArgumentParser):
-        parser.add_argument('--regions', default=None, type=UUID, required=False)
-        parser.add_argument('--solution', default=None, type=UUID, required=False)
-        parser.add_argument('--environment', default=None, type=str, required=False)
-        parser.add_argument('--out', default=None, type=str, required=False)
+        parser.add_argument('--regions', default=None, type=UUID, required=False, help='UUID of the group of visibility volumes')
+        parser.add_argument('--solution', default=None, type=UUID, required=False, help='UUID of the solution to plot')
+        parser.add_argument('--environment', default=None, type=str, required=False, help='environment map to plot *.obj')
+        parser.add_argument('--out', default=None, type=str, required=False, help='file to save output to')
         return super().modifyParser(parser)
 
     def run(self, args: Namespace):

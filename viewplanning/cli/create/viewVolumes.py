@@ -23,19 +23,20 @@ RESULTING_FACES = 500
 class ViewVolumes(Subapplication):
     def __init__(self):
         super().__init__('viewvolumes')
+        self.description = 'Create view volumes in an environment.'
 
     def modifyParser(self, parser: ArgumentParser):
-        parser.add_argument('--gridPoints', dest='gridPoints', default=256, type=int)
-        parser.add_argument('--worldMap', dest='worldMap', default='data/worldMaps/uptownCharlotte.obj', type=str)
-        parser.add_argument('--maxDistance', dest='maxDistance', default=600, type=float)
-        parser.add_argument('--group', dest='group', default='vv', type=str)
-        parser.add_argument('--radius', dest='radius', type=float, default=300)
-        parser.add_argument('--out', dest='out', type=str, default='data/tmp/')
-        parser.add_argument('--minHeight', dest='minHeight', type=float, default=150)
-        parser.add_argument('--delta', dest='delta', type=float, default=150)
-        parser.add_argument('--numGroups', dest='numGroups', type=int, default=20)
-        parser.add_argument('--targets', dest='targets', type=int, nargs=3, default=[2, 2, 1])
-        parser.add_argument('--areapct', dest='areapct', type=float, default=1.0)
+        parser.add_argument('--gridPoints', dest='gridPoints', default=256, type=int, help='number of grid cells to use when finding height map')
+        parser.add_argument('--worldMap', dest='worldMap', default='data/worldMaps/uptownCharlotte.obj', type=str, help='map of the environment *.obj')
+        parser.add_argument('--maxDistance', dest='maxDistance', default=600, type=float, help='smallest distance between targets')
+        parser.add_argument('--group', dest='group', default='vv', type=str, help='group name for view volumes')
+        parser.add_argument('--radius', dest='radius', type=float, default=300, help='max sensing range of camera')
+        parser.add_argument('--out', dest='out', type=str, default='data/tmp/', help='output directory')
+        parser.add_argument('--minHeight', dest='minHeight', type=float, default=150, help='minimum aircraft altitude')
+        parser.add_argument('--delta', dest='delta', type=float, default=150, help='vertical clearence from target')
+        parser.add_argument('--numGroups', dest='numGroups', type=int, default=20, help='number of sets of target groups')
+        parser.add_argument('--targets', dest='targets', type=int, nargs=3, default=[2, 2, 1], help='number of targets on the sides of buldings, number of targes on the tops of buildings, number of targest on the ground plane')
+        parser.add_argument('--areapct', dest='areapct', type=float, default=1.0, help='percentage of area of the environment map to use')
         super().modifyParser(parser)
 
     def run(self, args):
