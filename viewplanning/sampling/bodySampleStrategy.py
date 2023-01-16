@@ -7,7 +7,24 @@ from viewplanning.models import Region, Vertex3D
 
 
 class BodySampleStrategy(SampleStrategy[Region]):
+    '''
+    Body sample strategy samples points on the interior of a 3D volume. 
+    Headings are sampled uniformly and pitches are sample uniformly between the supplied range.
+    '''
+
     def __init__(self, numSamples, numTheta, numPhi, phiRange: 'list[float]'):
+        '''
+        Parameters
+        ----------
+        numSamples: int
+            number of (x, y, z) samples per volume
+        numTheta: int
+            number of heading angles per (x, y, z) sample
+        numPhi: int
+            number of pitch anlges per (X, y, z, theta) sample
+        phiRange: list[float]
+            acceptable range of pitch angles
+        '''
         self.numSamples = numSamples
         self.numTheta = numTheta
         self.numPhi = numPhi

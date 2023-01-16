@@ -44,13 +44,30 @@ class DubinsSolver(object):
         return samples
 
     def solve(self) -> 'list[Edge]':
+        '''
+        Solve the view planning problem
+
+        Returns
+        -------
+        list[Edge]
+            solution to the view planning problem
+        '''
         pass
 
     def verify(self) -> int:
+        '''
+        Verify the view planning solution is valid
+        '''
         return True
 
     def plot(self):
+        '''
+        Plot the soluiton to the view planning problem
+        '''
         self.plotter.plot(self.regions, self.edges)
 
     def cleanUp(self):
+        '''
+        Cleanup temporary resources after solving the problem
+        '''
         self.tspSolver.cleanUp(self.id)

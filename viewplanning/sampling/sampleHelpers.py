@@ -14,7 +14,21 @@ class SamplingFailedException(Exception):
 
 
 def iterateRegions(regions: 'list[Region]', type=RegionType.UNKNOWN):
+    '''
+    Reads representations regions into memory.
 
+    Parameters
+    ----------
+    regions: list[Region]
+        list of regions to read
+    type: RegionType
+        force a region to be a specific type
+
+    Returns
+    -------
+    Generator[list[Polygon] | list[pv.PolyData] | list[list[float]]]
+        Representation of the region
+    '''
     for region in regions:
         if type == RegionType.UNKNOWN:
             if region.type == RegionType.POINT:
@@ -65,6 +79,20 @@ class Node:
 
 
 def polygonFromBody(zLevel: float, mesh: pv.PolyData) -> Polygon:
+    """
+    slices a mesh along a plane parallel to xy plane at height zLevel and returns the largest polygon.
+
+    Parameters
+    ----------
+    zLevel: float
+        z height to slice at
+    mesh: Obj
+        environment mesh
+    Returns
+    -------
+    Polygons
+        polygon resulting from z slice
+    """
     polygon: Polygon = None
     for p in polygonsFromMesh(zLevel, mesh):
         if polygon is None or p.area > polygon.area:
@@ -168,6 +196,22 @@ def polygonsFromMesh(zLevel: float, mesh: pv.PolyData) -> 'list[Polygon]':
 
 
 def containsPoint2d(point, polygon: Polygon):
+    '''
+    Determines if a 2D polygon containts a point.
+
+    Parameters
+    ----------
+    point: list
+        (x,y) point
+    polygon: Polygon
+        polygon to text
+
+    Returns
+    -------
+    bool
+        True, if the point is in the polygon.
+        False, if the point is not in the polygon.
+    '''
     x0, y0, x1, y1 = polygon.bounds
     ty = point[1]
     tx = point[0]
@@ -189,5 +233,21 @@ def containsPoint2d(point, polygon: Polygon):
 
 
 def containsPoint3d(point, body: pv.PolyData):
+    '''
+    Determines if a 3D volume containts a point by breaking it into a 2D polygon and testing the polygon.
+
+    Parameters
+    ----------
+    point: list
+        (x,y) point
+    body: pv.PolyData
+        3D volume to test
+
+    Returns
+    -------
+    bool
+        True, if the point is in the volume.
+        False, if the point is not in the volume.
+    '''
     polygon = polygonFromBody(point[2], body)
     return containsPoint2d(point[:2], polygon)

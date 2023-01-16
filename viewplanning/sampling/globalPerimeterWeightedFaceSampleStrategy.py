@@ -10,7 +10,27 @@ OFFSET_INTO_BODY = .005
 
 
 class GlobalPerimeterWeightedFaceSampleStrategy(SampleStrategy[Region]):
+    '''
+    Samples the surface of the volumes according to the global surface area distribution.
+    Samples inward pointing heading angles.
+    Samples pitch angles uniformly between supplied values.
+    '''
+
     def __init__(self, numSamples, numTheta, numPhi, phiRange: 'list[float]', numLevels: int):
+        '''
+        Parameters
+        ----------
+        numSamples: int
+            number of (x, y, z) samples per volume
+        numTheta: int
+            number of heading angles per (x, y, z) sample
+        numPhi: int
+            number of pitch anlges per (X, y, z, theta) sample
+        phiRange: list[float]
+            acceptable range of pitch angles
+        numLevels: int
+            numbe of z plane slices to assign samples on
+        '''
         self.numSamples = numSamples
         self.numTheta = numTheta
         self.numPhi = numPhi

@@ -14,6 +14,8 @@ import uuid
 
 
 class DubinsSolverBuilder(object):
+    '''creation method for creating view planning problems'''
+
     def __init__(self):
         self._sampleStrategy = None
         self._regions: 'list[Region]' = {}

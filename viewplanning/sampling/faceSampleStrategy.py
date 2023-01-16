@@ -7,7 +7,24 @@ from viewplanning.sampling.sampleHelpers import iterateRegions
 
 
 class FaceSampleStrategy(SampleStrategy[Region]):
+    '''
+    Randomly samples the surface of the volumes. Heading angles are sampled uniformly on [0, 2pi).
+    Pitch angles are sampled uniformly over the supplied range.
+    '''
+
     def __init__(self, numSamples, numTheta, numPhi, phiRange: 'list[float]'):
+        '''
+        Parameters
+        ----------
+        numSamples: int
+            number of (x, y, z) samples per volume
+        numTheta: int
+            number of heading angles per (x, y, z) sample
+        numPhi: int
+            number of pitch anlges per (X, y, z, theta) sample
+        phiRange: list[float]
+            acceptable range of pitch angles
+        '''
         self.numSamples = numSamples
         self.numTheta = numTheta
         self.numPhi = numPhi

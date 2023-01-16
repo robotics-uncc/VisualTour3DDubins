@@ -15,6 +15,18 @@ class MaxAreaPolygonSampleStrategy(SampleStrategy):
     """
 
     def __init__(self, numSamples, numAngles):
+        '''
+        Parameters
+        ----------
+        numSamples: int
+            number of (x, y, z) samples per volume
+        numTheta: int
+            number of heading angles per (x, y, z) sample
+        numPhi: int
+            number of pitch anlges per (X, y, z, theta) sample
+        phiRange: list[float]
+            acceptable range of pitch angles
+        '''
         super().__init__()
         self.matrixEdge = int(np.floor(np.sqrt(numSamples)))
         self.numAngles = numAngles

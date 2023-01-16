@@ -10,6 +10,14 @@ from viewplanning.sampling import BodySampleStrategy, PointSampleStrategy, FaceS
 
 
 def makeSolver(experiment: Experiment):
+    '''
+    factory method for making view planning problem solvers
+
+    Parameters
+    ----------
+    experiment: Experiment
+        experiment to solve
+    '''
     builder = DubinsSolverBuilder()
 
     return builder.setRadius(experiment.radius) \
@@ -25,6 +33,14 @@ def makeSolver(experiment: Experiment):
 
 
 def makeStrategy(sample: SampleStrategyRecord):
+    '''
+    factory method for creating a sample strategy
+
+    Parameters
+    ----------
+    sample: SampleStrategyRecord
+        sample strategy to create
+    '''
     if sample.type == SampleStrategyType.BODY:
         return BodySampleStrategy(sample.numSamples, sample.numTheta, sample.numPhi, sample.phiRange)
     elif sample.type == SampleStrategyType.POINT:
@@ -47,6 +63,14 @@ def makeStrategy(sample: SampleStrategyRecord):
 
 
 def makeEtsp2Dtsp(type: Etsp2DtspType):
+    '''
+    factory method for creating method to convert 3D ETSP to a 3D DTSP
+
+    Parameters
+    ----------
+    type; Etsp2DtspType
+        enum for selecting method
+    '''
     if type == Etsp2DtspType.UNKNOWN:
         return Etsp2Dtsp()
     elif type == Etsp2DtspType.ALTERNATING:
@@ -58,6 +82,14 @@ def makeEtsp2Dtsp(type: Etsp2DtspType):
 
 
 def makeVerificationStrategy(type: VerificationType):
+    '''
+    factory method for verification method of resulting path 
+
+    Parameters
+    ----------
+    type: VerificationType
+        enum for selection method
+    '''
     if type == VerificationType.DEFAULT:
         return VerificationStrategy()
     elif type == VerificationType.START_POINT:
@@ -67,6 +99,14 @@ def makeVerificationStrategy(type: VerificationType):
 
 
 def makeDubins(type: SolverType):
+    '''
+    factory method for selecting Dubins path solver
+
+    Parameters
+    ----------
+    type: SolverType
+        enum for selecting DTSP solving method
+    '''
     if type == SolverType.THREE_D or type == SolverType.THREE_D_MODIFIED_DISTANCE \
             or type == SolverType.THREE_D_TSP_FIRST:
         return RustVanaAirplane()

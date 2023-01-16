@@ -8,7 +8,24 @@ OFFSET = .01
 
 
 class Edge3dSampleStrategy(SampleStrategy[Region]):
+    '''
+    Samples to bottom edge of the visibility volumes. Samples inward pointing heading angles.
+    Samples pitch angles uniformly between supplied values.
+    '''
+
     def __init__(self, numSamples, numTheta, numPhi, phiRange):
+        '''
+        Parameters
+        ----------
+        numSamples: int
+            number of (x, y, z) samples per volume
+        numTheta: int
+            number of heading angles per (x, y, z) sample
+        numPhi: int
+            number of pitch anlges per (X, y, z, theta) sample
+        phiRange: list[float]
+            acceptable range of pitch angles
+        '''
         super().__init__()
         self.numSamples = numSamples
         self.numTheta = numTheta

@@ -9,6 +9,10 @@ import uuid
 
 
 class DubinsHighAltitudeSolver(DubinsSolver):
+    '''
+    Solves the view planning problem aboce the urban environment.
+    '''
+
     def __init__(self,
                  regions: 'list[Region]',
                  plotter: SolutionPlotter,
@@ -18,6 +22,24 @@ class DubinsHighAltitudeSolver(DubinsSolver):
                  tspSolver: TspSolver,
                  id: uuid.UUID
                  ) -> None:
+        '''
+        Parameters
+        ----------
+        regions: list[Region]
+            list of regeions where the aircraft can view the target
+        plotter: SolutionPlotter
+            plotter that will visualize the solution
+        verification: VerificationStrategy
+            method for verifying that the solution can view all of the targets
+        sampleStrategy: SampleStrategy
+            method for sampling the regions for configurations
+        edgeSolver: EdgeSolver
+            method for computing paths between configurations
+        tspSolver: TspSolver
+            traveling salesperson problem solving method
+        id: UUID
+            id of solver for disallowing collision of temporary files
+        '''
         super().__init__(regions, plotter, verification, sampleStrategy, edgeSolver, tspSolver, id)
 
     def solve(self) -> 'list[Edge]':
