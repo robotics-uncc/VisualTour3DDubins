@@ -6,7 +6,11 @@ from viewplanning.models import Vertex3D
 from typing import Callable
 
 
-class EuclideanTsp3DSubprocess(TspSolver):    
+class EuclideanTsp3DSubprocess(TspSolver):
+    '''
+    Euclidean TSP solver
+    '''
+
     def writeFiles(self, id: uuid.UUID, vertices: 'list[Vertex3D]', cost: Callable[[Vertex3D, Vertex3D], float]):
 
         groups = set([vertex.group for vertex in vertices])
@@ -55,7 +59,7 @@ class EuclideanTsp3DSubprocess(TspSolver):
         subprocess.run(
             [
                 './GLKH_EXP',
-                 os.path.abspath('data/tmp/{0}/params.param'.format(id))
+                os.path.abspath('data/tmp/{0}/params.param'.format(id))
             ],
             cwd='subs/GLKH/',
             stdout=subprocess.DEVNULL
@@ -74,7 +78,7 @@ class EuclideanTsp3DSubprocess(TspSolver):
                     i = int(line) - 1
                     pathVertices.append(vertices[i])
         return pathVertices
-    
+
     def cleanUp(self, id):
         if os.path.exists('data/tmp/{0}/gtsp.gtsp'.format(id)):
             os.remove('data/tmp/{0}/gtsp.gtsp'.format(id))

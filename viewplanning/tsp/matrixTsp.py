@@ -8,6 +8,10 @@ from viewplanning.models import Vertex
 
 
 class MatrixTspSubprocess(TspSolver):
+    '''
+    TSP solver with custom non bidirectional edge costs
+    '''
+
     def writeFiles(self, id: uuid.UUID, vertices: 'list[Vertex]', edgeMatrix: Callable[[int, int], float]):
         numVertices = len(vertices)
         neighboorhoods = []
