@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from .viewVolumes import ViewVolumes
 from .montecarloExperiments import MonteCarloExperiments
 from .fixViewVolumes import FixViewVolumes
+from .fromjson import FromJson
 
 
 class Create(Subapplication):
@@ -16,6 +17,7 @@ class Create(Subapplication):
             ViewVolumes(),
             MonteCarloExperiments(),
             FixViewVolumes(),
+            FromJson()
         ]
         self.description = 'Create view volumes or experiments.'
 
