@@ -1,8 +1,8 @@
 import numpy as np
 import pyvista as pv
-from viewplanning.dubins import vanaAirplaneCurve
 from viewplanning.models import Region, Edge3D, Vertex3D
 from .pathPlotter import SolutionPlotter
+from viewplanning.edgeSolver import makeCurve
 """
 Authors
 -------
@@ -12,26 +12,28 @@ Collin Hague : chague@uncc.edu
 
 class SolutionPlotter3dPyvista(SolutionPlotter):
     """
-    plot 3D solutions
+    plots solution to path planning with object avoidance
+
+    plot(volumes: list[Region], edges: list[Edge3D])
     """
 
     def __init__(self, environment: pv.PolyData):
-        '''
-        Parameters
-        ----------
-        environment: pv.PolyData
-            environment to plot solutions in
-        '''
         self.environment = environment
 
     def plot(self, volumes: 'list[Region]', edges: 'list[Edge3D]', **kwargs):
         """
+        plots solution to path planning with object avoidance
+
         Parameters
         ----------
-        volumes: list[Region]
-            list of view volumes to plot
-        edges: list[Edge3D]
-            list of Dubins airplane paths to plot
+        environment: PolyData
+            environment the agent transverses
+        start: ndarray
+            start orientation of vehicle R^3 x S^2
+        end: ndarray
+            end orientation of vehicle R^3 x S^2
+        paths: list[DubinsPaths]
+            list of paths for the vehicle to follow
         """
         plotter = pv.Plotter()
         if self.environment is not None:
@@ -39,10 +41,8 @@ class SolutionPlotter3dPyvista(SolutionPlotter):
         i = 0
         for path in edges:
             poly = pv.PolyData()
-            f = vanaAirplaneCurve(path)
-            t = np.linspace(0, 1, 100)
+            points = makeCurve(path)
 
-            points = np.array([f(s) for s in t])
             poly.points = points
             cells = np.full((len(points) - 1, 3), 2, dtype=np.int_)
             cells[:, 1] = np.arange(0, len(points) - 1, dtype=np.int_)
@@ -58,7 +58,7 @@ class SolutionPlotter3dPyvista(SolutionPlotter):
             reader = pv.get_reader(volume.file)
             vv = reader.read()
             t = np.eye(4)
-            t[:3, :3] = np.array(volume.rotationMatrix)
+            t[:3, :3] = volume.rotationMatrix
             vv.transform(t)
             plotter.add_mesh(vv, color='white', show_edges=True, opacity=.2)
             s = pv.Sphere(radius=5, center=volume.points[0])
@@ -66,5 +66,4 @@ class SolutionPlotter3dPyvista(SolutionPlotter):
         plotter.show()
 
     def savePlot(self, path):
-        '''save plot not implemented'''
         pass
