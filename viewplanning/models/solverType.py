@@ -7,3 +7,5 @@ class SolverType(IntEnum):
     THREE_D = 2
     THREE_D_TSP_FIRST = 3
     THREE_D_MODIFIED_DISTANCE = 4
+    # -----------------------------
+    HIGH_ALTITUDE = 8

@@ -1,6 +1,5 @@
 from enum import IntEnum
 
-
 class Etsp2DtspType(IntEnum):
     UNKNOWN = 0
     ALTERNATING = 1

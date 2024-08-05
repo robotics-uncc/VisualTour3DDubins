@@ -1,43 +1,78 @@
 from dataclasses import dataclass, field
 from .environment import Environment, RoadMapType
 from .region import Region, RegionType
-from .sampleStrategyRecord import SampleStrategyRecord, SampleStrategyType
+from .sampleStrategyRecord import SampleStrategyRecord, SampleStrategyType, HeadingStrategyRecord, HeadingStrategyType, IntersectionStrategyRecord, SampleStrategyIntersection
 from .solverType import SolverType
 from .etsp2dtspType import Etsp2DtspType
 from .verificationType import VerificationType
+from .edgeStrategyRecord import EdgeStrategyRecord, EdgeModification, EdgeStrategyType
 import uuid
 import numpy as np
 
 
 @dataclass
 class Experiment(object):
-    radius: float = 1
-    flightAngleBounds: 'list[float]' = field(default_factory=list)
-    dubinsCost: object = None,
+    edgeStrategy: EdgeStrategyRecord = field(
+        default_factory=EdgeStrategyRecord),
     solverType: SolverType = SolverType.UNKNOWN
-    etsp2DtspType: Etsp2DtspType = Etsp2DtspType.UNKNOWN
     verificationType: VerificationType = VerificationType.DEFAULT
-    sampleStrategy: SampleStrategyRecord = field(default_factory=SampleStrategyRecord)
+    sampleStrategy: SampleStrategyRecord = field(
+        default_factory=SampleStrategyRecord)
     group: str = field(default_factory=str)
     _id: uuid.UUID = field(default_factory=uuid.uuid1)
     regions: 'list[Region]' = field(default_factory=list)
     environment: Environment = field(default_factory=Environment)
-    beta: float = 0
-    var: float = 0
 
     @staticmethod
     def from_dict(item: dict):
-        n = Experiment(**item)
-        n.sampleStrategy = SampleStrategyRecord(**item['sampleStrategy'])
+        n = Experiment(
+            group=item.get('group', ''),
+            solverType=item.get('solverType', SolverType.UNKNOWN),
+            verificationType=item.get(
+                'verificationType', VerificationType.DEFAULT),
+            _id=item.get('_id', uuid.UUID(
+                '00000000-0000-0000-0000-000000000000')),
+        )
+        if 'edgeStrategy' in item.keys():
+            n.edgeStrategy = EdgeStrategyRecord(**item['edgeStrategy'])
+        else:
+            # old experiment compatibility
+            solver = item.get('solverType', 0)
+            modification = EdgeModification.NONE
+            edgeSolver = EdgeStrategyType.UNKNOWN
+            if solver == SolverType.THREE_D:
+                solver = SolverType.HIGH_ALTITUDE
+                edgeSolver = EdgeStrategyType.VANA_AIRPLANE
+            elif solver == SolverType.THREE_D_MODIFIED_DISTANCE or solver == SolverType.THREE_D_TSP_FIRST:
+                solver = SolverType.HIGH_ALTITUDE
+                edgeSolver = EdgeStrategyType.MODIFIED_AIRPLANE
+            elif solver == SolverType.TWO_D:
+                solver = SolverType.HIGH_ALTITUDE
+                edgeSolver = edgeSolver.DUBINS_CAR
+            else:
+                raise Exception('Error Parsing Experiment')
+
+            n.solverType = solver
+
+            n.edgeStrategy = EdgeStrategyRecord(
+                dwellDistance=0,
+                leadDistance=0,
+                etsp2DTSPType=item.get('estp2dtspType', Etsp2DtspType.UNKNOWN),
+                radius=item.get('radius', 1),
+                flightAngleBounds=item.get('flightAngleBounds', [0] * 2),
+                type=edgeSolver,
+                modification=modification)
+
+        n.sampleStrategy = SampleStrategyRecord.from_dict(
+            item['sampleStrategy'])
         n.regions = [Region(**r) for r in item['regions']]
-        n.radius = float(n.radius)
         if 'environment' in item.keys():
             n.environment = Environment(**item['environment'])
         return n
 
 
 def makeExperiment(
-    solverType=SolverType.THREE_D,
+    solverType=SolverType.HIGH_ALTITUDE,
     sampleType=SampleStrategyType.FACE,
     numPhi=1,
     numTheta=1,
@@ -58,7 +93,18 @@ def makeExperiment(
     inflateRadius: float = 1.0,
     sampleDistance: float = 1.0,
     numLevels: int = 2,
-    envRotMatrix: 'list[list[float]]' = None
+    envRotMatrix: 'list[list[float]]' = None,
+    dwellDistance: float = 0,
+    leadDistance: float = 0,
+    edgeType: EdgeStrategyType = EdgeStrategyType.VANA_AIRPLANE,
+    modification: EdgeModification = EdgeModification.NONE,
+    headingStrategyType: HeadingStrategyType = HeadingStrategyType.UNKNOWN,
+    numRays: int = 64,
+    intersectionType: SampleStrategyIntersection = SampleStrategyIntersection.NON_INTERSECTING,
+    cliqueLimit: int = 3,
+    intersectionRadius: float = 300,
+    intersectionAlpha: float = 1,
+    multiplyDwell: bool = True
 ):
     if envRotMatrix is None:
         envRotMatrix = np.eye(3).tolist()
@@ -75,12 +121,30 @@ def makeExperiment(
             numTheta=numTheta,
             numPhi=numPhi,
             phiRange=phiRange,
-            hyperParameters=hyperparameters
+            hyperParameters=hyperparameters,
+            heading=HeadingStrategyRecord(
+                type=headingStrategyType,
+                headingRange=[0, np.pi * 2],
+                dwellDistance=dwellDistance,
+                numRays=numRays,
+                multiplyDwell=multiplyDwell
+            ),
+            intersection=IntersectionStrategyRecord(
+                type=intersectionType,
+                cliqueLimit=cliqueLimit,
+                alpha=intersectionAlpha,
+                cliqueRadius=intersectionRadius
+            )
         ),
-        radius=radius,
-        flightAngleBounds=faBounds,
+        edgeStrategy=EdgeStrategyRecord(
+            dwellDistance=dwellDistance,
+            leadDistance=leadDistance,
+            flightAngleBounds=faBounds,
+            etsp2DTSPType=etsp2Dtsp,
+            radius=radius,
+            type=edgeType,
+            modification=modification),
         solverType=solverType,
-        etsp2DtspType=etsp2Dtsp,
         group=group,
         environment=Environment(
             file=envFile,

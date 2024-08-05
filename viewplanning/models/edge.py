@@ -1,19 +1,22 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from .vertex import Vertex, Vertex2D, Vertex3D
 from .dubinsPathType import DubinsPathType
 from enum import IntEnum
+import numpy as np
 
 
 class EdgeType(IntEnum):
     UNKNOWN = 0
     TWO_D = 1
     THREE_D = 2
+    DWELL_STRAIGHT = 3
+    LEAD_IN_DWELL = 4
 
 
 @dataclass
 class Edge(object):
-    start: Vertex
-    end: Vertex
+    start: Vertex = field(default_factory=Vertex)
+    end: Vertex = field(default_factory=Vertex)
     cost: float = 0
     type: EdgeType = EdgeType.UNKNOWN
 
@@ -31,6 +34,21 @@ class Edge(object):
             e.pathTypeSZ = DubinsPathType(item['pathTypeSZ'])
             e.start = Vertex.from_dict(item['start'])
             e.end = Vertex.from_dict(item['end'])
+            return e
+        elif item['type'] == EdgeType.DWELL_STRAIGHT:
+            e = DwellStraightEdge(**item)
+            e.start = Vertex.from_dict(item['start'])
+            e.end = Vertex.from_dict(item['end'])
+            e.dwellVector = np.array(e.dwellVector)
+            e.transitionEdge = Edge.from_dict(e.transitionEdge)
+            return e
+        elif item['type'] == EdgeType.LEAD_IN_DWELL:
+            e = LeadInDwellEdge(**item)
+            e.start = Vertex.from_dict(item['start'])
+            e.end = Vertex.from_dict(item['end'])
+            e.dwellVector = np.array(e.dwellVector)
+            e.leadVector = np.array(e.dwellVector)
+            e.transitionEdge = Edge.from_dict(e.transitionEdge)
             return e
         else:
             return Edge(**item)
@@ -59,3 +77,24 @@ class Edge3D(Edge2D):
     radiusSZ: float = 0
     pathTypeSZ: DubinsPathType = DubinsPathType.UNKNOWN
     type: EdgeType = EdgeType.THREE_D
+
+
+@dataclass
+class DwellStraightEdge(Edge):
+    start: Vertex = field(default_factory=Vertex)
+    end: Vertex = field(default_factory=Vertex)
+    cost: float = 0
+    dwellVector: 'list[float]' = field(default_factory=lambda: [0] * 3)
+    transitionEdge: Edge = field(default_factory=Edge)
+    type: EdgeType = EdgeType.DWELL_STRAIGHT
+
+
+@dataclass
+class LeadInDwellEdge(Edge):
+    start: Vertex = field(default_factory=Vertex)
+    end: Vertex = field(default_factory=Vertex)
+    cost: float = 0
+    dwellVector: 'list[float]' = field(default_factory=lambda: [0] * 3)
+    leadVector: 'list[float]' = field(default_factory=lambda: [0] * 3)
+    transitionEdge: Edge = field(default_factory=Edge)
+    type: EdgeType = EdgeType.LEAD_IN_DWELL

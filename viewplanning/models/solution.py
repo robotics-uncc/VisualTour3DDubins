@@ -4,6 +4,7 @@ from .experiment import Experiment
 from .edge import Edge
 from .vertex import Vertex
 
+
 @dataclass
 class Solution(object):
     cost: float = 0
