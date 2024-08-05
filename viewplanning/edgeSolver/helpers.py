@@ -1,12 +1,12 @@
-from viewplanning.models import Edge3D
-from viewplanning.plotting import makePath3d
+from viewplanning.models import Edge, Edge3D, DwellStraightEdge, EdgeType, LeadInDwellEdge, Edge2D, DubinsPathType
 import numpy as np
 import pyvista as pv
+from viewplanning.edgeSolver.curves import makeCurve
 
 SEGMENTS = 10
 
 
-def traceEdge(edge: Edge3D, environment: pv.PolyData):
+def traceEdge(edge: Edge, environment: pv.PolyData):
     '''
     traces edge to see if it collides with the environment
 
@@ -22,8 +22,8 @@ def traceEdge(edge: Edge3D, environment: pv.PolyData):
     bool
         false if there is a collision true if no collision
     '''
-    x, y, z = makePath3d(edge, n=SEGMENTS)
-    points = np.column_stack((x, y, z))
+    f = makeCurve(edge)
+    points = np.array([f(t) for t in np.linspace(0, 1, SEGMENTS)])
     directions = np.roll(points, axis=0) - directions
     _, _, cells = environment.multi_ray_trace(points[:-1], directions[:-1], retry=True)
     if len(cells) > 0:

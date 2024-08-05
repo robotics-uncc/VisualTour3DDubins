@@ -2,7 +2,6 @@ from viewplanning.models.edge import Edge2D
 from .edgeSolver import EdgeSolver
 from viewplanning.dubins import DubinsPath
 from viewplanning.models import Vertex2D
-import numpy as np
 
 
 class DubinsCarEdge(EdgeSolver):

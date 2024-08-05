@@ -58,4 +58,10 @@ class EdgeSolver:
         list[Edge]
             cycle of edges
         '''
-        return [self.getEdge(path[i - 1], path[i]) for i in range(len(path))]
+        edges = []
+        for i in range(len(path)):
+            edge = self.getEdge(path[i - 1], path[i])
+            edge.start = path[i - 1]
+            edge.end = path[i]
+            edges.append(edge)
+        return edges

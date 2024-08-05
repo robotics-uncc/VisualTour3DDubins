@@ -18,7 +18,7 @@ class Alternating(Etsp2Dtsp):
             ab = vertices[i - 1].asPoint() - vertices[i - 2].asPoint()
             theta, phi = self._vectorAngle(ab)
             vertices[i - 2].theta = theta
-            vertices[i - 2].phi = 0  # phi
+            vertices[i - 2].phi = phi
         return vertices
 
     def _vectorAngle(self, vector):
