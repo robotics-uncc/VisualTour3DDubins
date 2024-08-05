@@ -22,7 +22,6 @@ import signal
 TIMEOUT = 3 * 60 * 60
 MEMORY_KILL = 80
 KILL_PROCESS = 5
-TEMP_DIR = 'data/tmp/'
 
 
 def _run(experiment: Experiment, writeQueue: Queue, dryRun=False):
