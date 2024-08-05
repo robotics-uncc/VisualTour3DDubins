@@ -1,7 +1,7 @@
 from typing import Tuple
 from viewplanning.models import DubinsPathType, Edge2D
 from viewplanning.models.vertex import Vertex2D
-from math import nan, inf, cos, sin, sqrt, pi, atan2, isnan, acos
+from math import nan, inf, cos, sin, sqrt, pi, atan2, isnan, acos, floor
 
 
 PATH_COMPARE_TOLERANCE = 1e-6
@@ -110,12 +110,12 @@ class DubinsPath(object):
         x = (x1 - x0) / r
         y = (y1 - y0) / r
         x, y = x * cos(h0) + y * sin(h0), -x * sin(h0) + y * cos(h0)
-        h = (h1 - h0) % (2 * pi)
+        h = mod(h1 - h0, 2 * pi)
         return x, y, h
 
     def _solveLSL(self, x: float, y: float, h: float, m_cth: float, m_sth: float) -> 'Tuple[float, float, float, float, int]':
         r = DEFAULT_DUBINS
-        b = sqrt((x - m_sth) * (x - m_sth) + (y + m_cth - 1.0) * (y + m_cth - 1.0))
+        b = (x - m_sth) * (x - m_sth) + (y + m_cth - 1.0) * (y + m_cth - 1.0)
         if b > 0:
             b = sqrt(b)
         else:
@@ -132,11 +132,10 @@ class DubinsPath(object):
 
         # 2 solutions on 0, 2pi
         for a in [a, a + pi]:
-            c = (h - a) % (2 * pi)
+            c = mod(h - a, 2 * pi)
             newEnd = self._getEndpointBSB(a, b, c, 1, 1, 1)
             if self._compareVector(newEnd, [x, y, h]) == 0:
                 r = (a, b, c, a + b + c, DubinsPathType.LSL)
-
         return r
 
     def _solveLSR(self, x: float, y: float, h: float, m_cth: float, m_sth: float) -> 'Tuple[float, float, float, float, int]':
@@ -158,7 +157,7 @@ class DubinsPath(object):
 
         # 2 solutions on 0, 2pi
         for a in [a, a + pi]:
-            c = (a - h) % (2.0 * pi)
+            c = mod(a - h, 2.0 * pi)
 
             # ensure endpoint is going to correct point
             newEnd = self._getEndpointBSB(a, b, c, 1, 1, -1)
@@ -186,7 +185,7 @@ class DubinsPath(object):
 
         # 2 solutions on 0, 2pi
         for a in [a, a + pi]:
-            c = (a + h) % (2.0 * pi)
+            c = mod(a + h, 2.0 * pi)
 
             # ensure endpoint is going to correct point
             newEnd = self._getEndpointBSB(a, b, c, -1, 1, 1)
@@ -196,9 +195,7 @@ class DubinsPath(object):
         # no correct points return default
         return r
 
-    def _solveRSR(self, x: float, y: float, h: float, m_cth: float, m_sth: float) -> \
-            'Tuple[float, float, float, float, int]':
-
+    def _solveRSR(self, x: float, y: float, h: float, m_cth: float, m_sth: float) -> 'Tuple[float, float, float, float, int]': 
         r = DEFAULT_DUBINS
         b = (x + m_sth) * (x + m_sth) + (y - m_cth + 1.0) * (y - m_cth + 1.0)
         if b > 0:
@@ -225,7 +222,7 @@ class DubinsPath(object):
             else:
                 # heading angle > 2pi
                 # check if turn 1 has good heading angle
-                h_cw = 2 * pi - (h % (2 * pi))
+                h_cw = 2 * pi - mod(h,  2 * pi)
                 if a >= h_cw:
                     c = h_cw + 2 * pi - a
                 else:
@@ -265,13 +262,13 @@ class DubinsPath(object):
 
             # 4 possible a values
             possibleA = [
-                a % (2 * pi),
-                (a + pi / 2) % (2 * pi),
-                (a + pi) % (2 * pi),
-                (a + 3 * pi / 2) % (2 * pi)
+                mod(a, 2 * pi),
+                mod(a + pi / 2, 2 * pi),
+                mod(a + pi, 2 * pi),
+                mod(a + 3 * pi / 2, 2 * pi)
             ]
             for a in possibleA:
-                c = (b - a - h) % (2 * pi)
+                c = mod(b - a - h, 2 * pi)
                 # check for valid point
                 newEnd = self._getEndpointBBB(a, b, c, -1, 1, -1)
                 # check for valid a b and c values
@@ -306,13 +303,13 @@ class DubinsPath(object):
 
             # 4 possible a values
             possibleA = [
-                a % (2 * pi),
-                (a + pi / 2) % (2 * pi),
-                (a + pi) % (2 * pi),
-                (a + 3 * pi / 2) % (2 * pi)
+                mod(a, 2 * pi),
+                mod(a + pi / 2, 2 * pi),
+                mod(a + pi, 2 * pi),
+                mod(a + 3 * pi / 2, 2 * pi)
             ]
             for a in possibleA:
-                c = (b - a + h) % (2 * pi)
+                c = mod(b - a + h, 2 * pi)
                 # check for valid point
                 newEnd = self._getEndpointBBB(a, b, c, 1, -1, 1)
                 # check for valid a b and c values
@@ -334,7 +331,7 @@ class DubinsPath(object):
         c *= kf
         v0 = ki * sin(a) + b * cos(a) + kf * (sin(a + c) - sin(a))
         v1 = ki * (-cos(a) + 1) + b * sin(a) + kf * (-cos(a + c) + cos(a))
-        v2 = (a + c) % (2 * pi)
+        v2 = mod(a + c, 2 * pi)
         return [v0, v1, v2]
 
     def _getEndpointBBB(self, a, b, c, ki, km, kf):
@@ -343,9 +340,13 @@ class DubinsPath(object):
         c *= kf
         v0 = ki * (2 * sin(a) - 2 * sin(a + b) + sin(a + b + c))
         v1 = ki * (1 - 2 * cos(a) + 2 * cos(a + b) - cos(a + b + c))
-        v2 = (a + b + c) % (2 * pi)
+        v2 = mod(a + b + c, 2 * pi)
         return [v0, v1, v2]
 
-
+def mod(a, b):
+    v = a - floor(a / b) * b
+    w = a % b
+    assert v == w
+    return v
 class DubinsFailureException(Exception):
     pass
