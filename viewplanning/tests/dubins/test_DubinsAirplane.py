@@ -1,5 +1,5 @@
 from viewplanning.dubins import DubinsAirplane
-from viewplanning.plotting import makePath3d
+from viewplanning.edgeSolver import makeCurve
 from viewplanning.models import Edge3D, Vertex3D
 import matplotlib.pyplot as plt
 import numpy as np
@@ -435,7 +435,7 @@ def testFailedToConverge():
 
 
 def plot(edge: Edge3D):
-    x, y, z = makePath3d(edge, n=1000)
+    x, y, z = makeCurve(edge, n=1000)
     fig, ax = plt.subplots(1, 1)
     ax.plot(x, y)
     ax.quiver([edge.start.x, edge.end.x], [edge.start.y, edge.end.y], np.cos(

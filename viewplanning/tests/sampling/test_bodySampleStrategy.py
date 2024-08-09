@@ -1,6 +1,7 @@
 from viewplanning.models import Region, RegionType
 from viewplanning.store import readObj
-from viewplanning.sampling import BodySampleStrategy, iterateRegions
+from viewplanning.sampling.single import BodySampleStrategy
+from viewplanning.sampling import iterateRegions
 import numpy as np
 
 

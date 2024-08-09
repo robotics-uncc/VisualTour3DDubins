@@ -1,4 +1,4 @@
-from viewplanning.sampling import MaxAreaPolygonSampleStrategy
+from viewplanning.sampling.single import MaxAreaPolygonSampleStrategy
 from viewplanning.models import Region, RegionType
 
 

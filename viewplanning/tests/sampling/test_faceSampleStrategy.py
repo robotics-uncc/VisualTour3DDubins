@@ -1,5 +1,5 @@
 from viewplanning.models import Region, RegionType
-from viewplanning.sampling import FaceSampleStrategy
+from viewplanning.sampling.single import FaceSampleStrategy
 import numpy as np
 
 

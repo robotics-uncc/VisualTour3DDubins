@@ -1,5 +1,5 @@
 from viewplanning.dubins import VanaAirplane
-from viewplanning.plotting import makePath3d
+from viewplanning.edgeSolver import makeCurve
 from viewplanning.models import Edge3D, Vertex3D
 import matplotlib.pyplot as plt
 import numpy as np
@@ -151,7 +151,7 @@ def testHigh():
 
 
 def plot(edge: Edge3D):
-    x, y, z = makePath3d(edge, n=1000)
+    x, y, z = makeCurve(edge, n=1000)
     fig, ax = plt.subplots(1, 2)
     ax[0].plot(x, y)
     ax[0].quiver([edge.start.x, edge.end.x], [edge.start.y, edge.end.y], np.cos(

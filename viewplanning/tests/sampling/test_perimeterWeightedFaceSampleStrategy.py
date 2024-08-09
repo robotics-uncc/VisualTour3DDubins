@@ -1,5 +1,5 @@
 from viewplanning.models import Region, RegionType
-from viewplanning.sampling import PerimeterWeightedFaceSampleStrategy
+from viewplanning.sampling.single import PerimeterWeightedFaceSampleStrategy
 import numpy as np
 
 

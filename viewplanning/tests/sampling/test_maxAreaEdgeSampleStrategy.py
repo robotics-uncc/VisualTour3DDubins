@@ -1,5 +1,5 @@
 from viewplanning.models import Region, RegionType
-from viewplanning.sampling import MaxAreaEdgeSampleStrategy
+from viewplanning.sampling.single import MaxAreaEdgeSampleStrategy
 import numpy as np
 
 
