@@ -1,12 +1,15 @@
-from viewplanning.dubins import RustVanaAirplane, RustDubinsCar
-from viewplanning.verification import VerificationStrategy, PathVerification, StartPointVerification
-from viewplanning.edgeSolver.etsp2dtsp import Etsp2Dtsp, Alternating, AlternatingBisector, AngleBisector
-from viewplanning.models import Experiment, SampleStrategyType, SolverType, Etsp2DtspType, VerificationType
-from viewplanning.models.sampleStrategyRecord import SampleStrategyRecord
+from viewplanning.models import Experiment, SampleStrategyType, Etsp2DtspType, VerificationType, SampleStrategyIntersection, SampleStrategyRecord, HeadingStrategyType, EdgeStrategyType, EdgeStrategyRecord, EdgeModification
 from viewplanning.solvers.dubinsSolverBuilder import DubinsSolverBuilder
-from viewplanning.sampling import BodySampleStrategy, PointSampleStrategy, FaceSampleStrategy, \
-    PerimeterWeightedFaceSampleStrategy, GlobalPerimeterWeightedFaceSampleStrategy, \
-    MaxAreaEdgeSampleStrategy, Edge3dSampleStrategy, MaxAreaPolygonSampleStrategy
+from viewplanning.sampling.single import BodySampleStrategy, PointSampleStrategy, FaceSampleStrategy, GlobalPerimeterWeightedFaceSampleStrategy, MaxAreaEdgeSampleStrategy, MaxAreaPolygonSampleStrategy, Edge3dSampleStrategy
+from viewplanning.sampling.multi import IntersectingFaceSampling, IntersectingEdge3DSampling, IntersectingGlobalWeightedFaceSampling, IntersectingMaxAreaEdgeSampling, IntersectingVolumeSampling, SimpleIntersectingVolumeSampling, BruteVolumeSampling
+from viewplanning.sampling.heading import UniformHeadings, InwardPointingHeadings, StraightDwellHeadings
+from viewplanning.edgeSolver.etsp2dtsp import Etsp2Dtsp, Alternating, AlternatingBisector, AngleBisector
+from viewplanning.verification import VerificationStrategy, PathVerification, StartPointVerification
+from viewplanning.dubins import RustVanaAirplane, RustDubinsCar
+from viewplanning.edgeSolver import RayTracedHeuristicEdge, DubinsAirplaneEdge, DubinsCarEdge, DwellStraight, HeuristicEdge, RayTracedAirplaneEdge, LeadInDwell
+from viewplanning.tsp import OverlappingTspSubprocess
+from math import pi
+import logging
 
 
 def makeSolver(experiment: Experiment):
@@ -20,16 +23,20 @@ def makeSolver(experiment: Experiment):
     '''
     builder = DubinsSolverBuilder()
 
-    return builder.setRadius(experiment.radius) \
-        .setSolverType(experiment.solverType) \
-        .setFlightAngleBounds(experiment.flightAngleBounds) \
+    builder.setSolverType(experiment.solverType) \
         .setSampleStrategy(makeStrategy(experiment.sampleStrategy)) \
         .addRegions(experiment.regions) \
-        .setEtsp2Dtsp(makeEtsp2Dtsp(experiment.etsp2DtspType)) \
         .setVerificationStrategy(makeVerificationStrategy(experiment.verificationType)) \
-        .setDubinsPath(makeDubins(experiment.solverType)) \
         .setEnvironment(experiment.environment) \
-        .build()
+        .setEdgeSolver(makeEdgeSolver(experiment.edgeStrategy, experiment.sampleStrategy)) \
+        .setId(experiment._id)
+
+    if (experiment.sampleStrategy.intersection.type == SampleStrategyIntersection.CLIQUE_INTERSECTION 
+            or experiment.sampleStrategy.intersection.type == SampleStrategyIntersection.SIMPLE_INTERSECTION 
+            or experiment.sampleStrategy.intersection.type == SampleStrategyIntersection.BRUTE_INTERSECTION):
+        builder.setTSPSolver(OverlappingTspSubprocess())
+
+    return builder.build()
 
 
 def makeStrategy(sample: SampleStrategyRecord):
@@ -41,25 +48,92 @@ def makeStrategy(sample: SampleStrategyRecord):
     sample: SampleStrategyRecord
         sample strategy to create
     '''
-    if sample.type == SampleStrategyType.BODY:
-        return BodySampleStrategy(sample.numSamples, sample.numTheta, sample.numPhi, sample.phiRange)
-    elif sample.type == SampleStrategyType.POINT:
-        return PointSampleStrategy(sample.numTheta)
-    elif sample.type == SampleStrategyType.FACE:
-        return FaceSampleStrategy(sample.numSamples, sample.numTheta, sample.numPhi, sample.phiRange)
-    elif sample.type == SampleStrategyType.WEIGHTED_FACE:
-        return PerimeterWeightedFaceSampleStrategy(sample.numSamples, sample.numTheta, sample.numPhi, sample.phiRange)
+    if sample.intersection.type == SampleStrategyIntersection.NON_INTERSECTING:
+        return makeStrategySingle(sample)
+    elif sample.intersection.type == SampleStrategyIntersection.SIMPLE_INTERSECTION:
+        method = makeStrategyMulti(sample)
+        return SimpleIntersectingVolumeSampling(method)
+    elif sample.intersection.type == SampleStrategyIntersection.BRUTE_INTERSECTION:
+        method = makeStrategyMulti(sample)
+        return BruteVolumeSampling(method, sample.intersection.cliqueRadius, sample.intersection.cliqueLimit)
+    elif sample.intersection.type == SampleStrategyIntersection.UNKNOWN:
+        raise Exception(
+            'Unknown Sampling Intersection Type {0}'.format(sample.intersection))
+
+
+def makeStrategyMulti(sample: SampleStrategyRecord):
+    '''
+        factory method for making a sample strategy that considers the intersection of visibility volumes.
+
+    Parameters
+    ----------
+    sample: SampleStrategyRecord
+        sample strategy to create
+    '''
+    heading = makeHeadingStrategy(sample)
+    if sample.type == SampleStrategyType.FACE:
+        return IntersectingFaceSampling(sample.numSamples, sample.numPhi, sample.phiRange, heading)
     elif sample.type == SampleStrategyType.GLOBAL_WEIGHTED_FACE:
-        return GlobalPerimeterWeightedFaceSampleStrategy(sample.numSamples, sample.numTheta, sample.numPhi,
-                                                         sample.phiRange, *sample.hyperParameters)
+        return IntersectingGlobalWeightedFaceSampling(sample.numSamples, sample.numPhi, sample.phiRange, sample.hyperParameters[0], heading)
     elif sample.type == SampleStrategyType.MAX_AREA_EDGE:
-        return MaxAreaEdgeSampleStrategy(sample.numSamples, sample.numTheta)
+        return IntersectingMaxAreaEdgeSampling(sample.numSamples, heading)
     elif sample.type == SampleStrategyType.EDGE_3D:
-        return Edge3dSampleStrategy(sample.numSamples, sample.numTheta, sample.numPhi, sample.phiRange)
-    elif sample.type == SampleStrategyType.MAX_AREA_POLYGON:
-        return MaxAreaPolygonSampleStrategy(sample.numSamples, sample.numTheta)
+        return IntersectingEdge3DSampling(sample.numSamples, sample.numPhi, sample.phiRange, heading)
     else:
         raise Exception('Unknown Sampling Type {0}'.format(sample.type))
+
+
+def makeStrategySingle(sample: SampleStrategyRecord):
+    '''
+        factory method for making a sample strategy that does not consider the intersection of visibility volumes.
+
+    Parameters
+    ----------
+    sample: SampleStrategyRecord
+        sample strategy to create
+    '''
+    heading = makeHeadingStrategy(sample)
+    if sample.type == SampleStrategyType.BODY:
+        return BodySampleStrategy(sample.numSamples, sample.numPhi, sample.phiRange, heading)
+    elif sample.type == SampleStrategyType.POINT:
+        return PointSampleStrategy(heading)
+    elif sample.type == SampleStrategyType.FACE:
+        return FaceSampleStrategy(sample.numSamples, sample.numPhi, sample.phiRange, heading)
+    elif sample.type == SampleStrategyType.GLOBAL_WEIGHTED_FACE:
+        return GlobalPerimeterWeightedFaceSampleStrategy(sample.numSamples, sample.numPhi, sample.phiRange, sample.hyperParameters[0], heading)
+    elif sample.type == SampleStrategyType.MAX_AREA_EDGE:
+        return MaxAreaEdgeSampleStrategy(sample.numSamples, heading)
+    elif sample.type == SampleStrategyType.MAX_AREA_POLYGON:
+        return MaxAreaPolygonSampleStrategy(sample.numSamples, heading)
+    elif sample.type == SampleStrategyType.EDGE_3D:
+        return Edge3dSampleStrategy(sample.numSamples, sample.numPhi, sample.phiRange, heading)
+    else:
+        raise Exception('Unknown Sampling Type {0}'.format(sample.type))
+
+
+def makeHeadingStrategy(sample: SampleStrategyRecord):
+    '''
+        factory method for making a method to sample heading for visilibity volume samples
+    
+    Parameters
+    ----------
+    sample: SampleStartegyRecord
+        sample strategy to create
+    '''
+    if sample.heading.type == HeadingStrategyType.UNIFORM:
+        return UniformHeadings(sample.numTheta, sample.heading.headingRange)
+    elif sample.heading.type == HeadingStrategyType.INWARD:
+        return InwardPointingHeadings(sample.numTheta)
+    elif sample.heading.type == HeadingStrategyType.DWELL:
+        return StraightDwellHeadings(sample.numTheta, sample.heading.numRays, sample.heading.dwellDistance, multiplyDwell=sample.heading.multiplyDwell)
+
+    logging.warn(
+        "sample strategy doesn't contain heading strategy using backwards compatibility")
+    # backwards compatibility
+    if sample.type == SampleStrategyType.BODY or sample.type == SampleStrategyType.POINT:
+        return UniformHeadings(sample.numTheta, [0, 2 * pi])
+    else:
+        return InwardPointingHeadings(sample.numTheta)
 
 
 def makeEtsp2Dtsp(type: Etsp2DtspType):
@@ -98,19 +172,40 @@ def makeVerificationStrategy(type: VerificationType):
         return PathVerification()
 
 
-def makeDubins(type: SolverType):
+def makeEdgeSolver(edgeRecord: EdgeStrategyRecord, sampleRecord: SampleStrategyRecord):
     '''
-    factory method for selecting Dubins path solver
+    create the method to make edges between sampled vertices
 
     Parameters
     ----------
-    type: SolverType
-        enum for selecting DTSP solving method
+    edgeRecord: EdgeStrategyRecord
+        which edge strategy to use
+    sampleRecord: SampleStrategyRecord
+        how the vertices will be sampled
     '''
-    if type == SolverType.THREE_D or type == SolverType.THREE_D_MODIFIED_DISTANCE \
-            or type == SolverType.THREE_D_TSP_FIRST:
-        return RustVanaAirplane()
-    elif type == SolverType.TWO_D:
-        return RustDubinsCar()
-    else:
-        return None
+    if edgeRecord.type == EdgeStrategyType.DUBINS_CAR:
+        edge = DubinsCarEdge(
+            edgeRecord.radius,
+            RustDubinsCar()
+        )
+    elif edgeRecord.type == EdgeStrategyType.VANA_AIRPLANE:
+        edge = DubinsAirplaneEdge(
+            edgeRecord.flightAngleBounds[0],
+            edgeRecord.flightAngleBounds[1],
+            edgeRecord.radius,
+            RustVanaAirplane()
+        )
+    elif edgeRecord.type == EdgeStrategyType.MODIFIED_AIRPLANE:
+        edge = HeuristicEdge(
+            edgeRecord.flightAngleBounds[0],
+            edgeRecord.flightAngleBounds[1],
+            edgeRecord.radius,
+            RustVanaAirplane(),
+            makeEtsp2Dtsp(edgeRecord.etsp2DTSPType)
+        )
+
+    if edgeRecord.modification == EdgeModification.DWELL:
+        edge = DwellStraight(edgeRecord.dwellDistance, edge, sampleRecord.heading.multiplyDwell)
+    if edgeRecord.modification == EdgeModification.LEAD_IN_DWELL:
+        edge = LeadInDwell(edgeRecord.leadDistance, edgeRecord.dwellDistance, edge, sampleRecord.heading.multiplyDwell)
+    return edge

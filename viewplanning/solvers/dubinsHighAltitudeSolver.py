@@ -5,7 +5,10 @@ from viewplanning.verification import VerificationStrategy
 from viewplanning.models import Region, Edge
 from viewplanning.tsp import TspSolver
 from viewplanning.edgeSolver import EdgeSolver
+from viewplanning.store import MeshStore
 import uuid
+import os
+import logging
 
 
 class DubinsHighAltitudeSolver(DubinsSolver):
@@ -43,16 +46,22 @@ class DubinsHighAltitudeSolver(DubinsSolver):
         super().__init__(regions, plotter, verification, sampleStrategy, edgeSolver, tspSolver, id)
 
     def solve(self) -> 'list[Edge]':
+        logging.debug(f'sampling {self.id}, pid {os.getpid()}')
         vertices = self.sample()
 
         def costFunction(x, y):
             return self.edgeSolver.edgeCost(x, y)
         try:
+            logging.debug(f'writing file {self.id}, pid {os.getpid()}')
             self.tspSolver.writeFiles(self.id, vertices, costFunction)
+            logging.debug(f'solving {self.id}, pid {os.getpid()}')
             path = self.tspSolver.solve(self.id, vertices)
+            logging.debug(f'making edges {self.id}, pid {os.getpid()}')
             edges = self.edgeSolver.getEdges(path)
             return edges
         except Exception as e:
             raise e
         finally:
+            store = MeshStore.getInstance()
+            store.clearCache()
             self.tspSolver.cleanUp(self.id)

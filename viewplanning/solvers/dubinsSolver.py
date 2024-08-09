@@ -1,3 +1,4 @@
+import uuid
 from viewplanning.models import Edge, Region
 from viewplanning.sampling import SampleStrategy, SamplingFailedException
 from viewplanning.tsp.Tsp import TspSolver
@@ -8,6 +9,9 @@ from uuid import UUID
 
 
 class DubinsSolver(object):
+    '''
+    abstract class for solving the viewplanning problem
+    '''
     def __init__(self,
                  regions: 'list[Region]',
                  plotter: SolutionPlotter,
@@ -39,7 +43,7 @@ class DubinsSolver(object):
             real = set(range(len(self.regions)))
             diff = real.difference(groups)
             names = [self.regions[j].file for j in diff]
-            raise SamplingFailedException(f'{type(self.sampleStrategy).__name__} couldn\'t sample regions {names}')
+            raise SamplingFailedException(f'Sampling failed {type(self.sampleStrategy).__name__} couldn\'t sample regions {names}')
 
         return samples
 
