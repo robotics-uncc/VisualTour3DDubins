@@ -1,32 +1,37 @@
 import os
 import uuid
 import subprocess
-from .Tsp import TspSolver
-from viewplanning.models import Vertex3D
+import numpy as np
 from typing import Callable
 
+from viewplanning.models import Vertex3D
+from .Tsp import TspSolver
 
-class EuclideanTsp3DSubprocess(TspSolver):
+
+def euclideanDistance(x: Vertex3D, y: Vertex3D):
+    return int(np.ceil(np.linalg.norm(x.asPoint() - y.asPoint())))
+
+
+class BidirectionalFunctionTspSubprocess(TspSolver):
     '''
-    Use GLKH to solve a tsp where the edges are Euclidean distance
+    use GLKH to solve a tsp where the edges are bidirectional
     '''
     def __init__(self):
         super().__init__()
         self.process: subprocess.Popen = None
 
-    def writeFiles(self, id: uuid.UUID, vertices: 'list[Vertex3D]', cost: Callable[[Vertex3D, Vertex3D], float]):
-
+    def writeFiles(self, id: uuid.UUID, vertices: 'list[Vertex3D]', distanceFunction: Callable[[Vertex3D, Vertex3D], float] = euclideanDistance):
+        if not os.path.exists('data/tmp'):
+            os.mkdir('data/tmp')
+        os.mkdir('data/tmp/{0}'.format(id))
+        os.chmod('data/tmp/{0}'.format(id), 0o777)
         groups = set([vertex.group for vertex in vertices])
+
         if '' in groups:
             groups.remove('')
         if None in groups:
             groups.remove(None)
 
-        if not os.path.exists('data/tmp'):
-            os.mkdir('data/tmp')
-
-        os.mkdir('data/tmp/{0}'.format(id))
-        os.chmod('data/tmp/{0}'.format(id), 0o777)
         with open('data/tmp/{0}/params.param'.format(id), 'w') as f:
             problemFile = os.path.abspath('data/tmp/{0}/gtsp.gtsp'.format(id))
             outputFile = os.path.abspath('data/tmp/{0}/tour.tour'.format(id))
@@ -40,12 +45,13 @@ class EuclideanTsp3DSubprocess(TspSolver):
             f.write('COMMENT : Dubins Path Planning\n')
             f.write('DIMENSION : {0}\n'.format(len(vertices)))
             f.write('GTSP_SETS : {0}\n'.format(len(groups)))
-            f.write('EDGE_WEIGHT_TYPE : EUC_3D\n')
-            f.write('EDGE_WEIGHT_FORMAT : FUNCTION\n')
-            f.write('NODE_COORD_TYPE : THREED_COORDS\n ')
-            f.write('NODE_COORD_SECTION\n')
+            f.write('EDGE_WEIGHT_TYPE : EXPLICIT\n')
+            f.write('EDGE_WEIGHT_FORMAT : UPPER_ROW\n')
+            f.write('EDGE_WEIGHT_SECTION :\n')
             for i in range(len(vertices)):
-                f.write('{0:4d} {1:10.2f} {1:10.2f} {1:10.2f}\n'.format(i + 1, vertices[i].x, vertices[i].y, vertices[i].z))
+                for j in range(i + 1, len(vertices)):
+                    f.write('{0:11d}'.format(distanceFunction(vertices[i].asPoint(), vertices[j].asPoint())))
+                f.write('\n')
             f.write('GTSP_SET_SECTION\n')
             i = 0
             j = 0
