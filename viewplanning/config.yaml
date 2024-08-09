@@ -1,9 +1,25 @@
 database:
   mongo:
-   host: 'localhost'
-   port: 27017
-files:
-  temp: 'data/tmp'
+    host: localhost
+    port: 27017
+    db: view_planning
+    user: ""
+    password: ""
+  experiments:
+    type: json
+    location: data/experiments.json
+  regions:
+    type: json
+    location: data/regions.json
+  results:
+    type: json
+    location: data/results.json
+intersection:
+  type: 'memory'
+  folder: data/veiwRegions/cliques/
+process:
+  timeout: 21600
+  multithreading: True
 logging:
   level: 'INFO'
   handlers:
@@ -16,4 +32,9 @@ logging:
       name: 'error'
       mode: 'a'
       format: '%(asctime)s %(relativeCreated)6d %(threadName)s %(levelname)s %(message)s'
-      level: 'ERROR'
+      level: 'WARNING'
+    - out: 'log.txt'
+      name: 'file'
+      mode: 'a'
+      format: '%(asctime)s %(relativeCreated)6d %(threadName)s %(levelname)s %(message)s'
+      level: 'INFO'
