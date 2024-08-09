@@ -1,18 +1,19 @@
+from .helpers import MultiSampleStrategy, Volume
+from viewplanning.sampling import polygonFromBody, getPointsOnEdge, SamplingFailedException
+from viewplanning.models import Region, VertexMulti, Vertex3DMulti
+import pyvista as pv
 import numpy as np
-from viewplanning.models import Region, Vertex3D, RegionType
-from viewplanning.sampling.sampleStrategy import SampleStrategy
-from viewplanning.sampling.sampleHelpers import iterateRegions, polygonFromBody, getPointsOnEdge, SamplingFailedException
-from typing import Iterator
 
 OFFSET = .01
-POLYGON_CUTOFF = .01
-LIMIT = 200
+INTERSECTION_CUTOFF = 1e-3
+LIMIT = 200 
 
 
-class Edge3dSampleStrategy(SampleStrategy[Region]):
+class IntersectingEdge3DSampling(MultiSampleStrategy):
     '''
-    Samples to bottom edge of the visibility volumes.
+    Samples to bottom edge of the visibility volumes. Samples inward pointing heading angles.
     Samples pitch angles uniformly between supplied values.
+    Considers the intersection of visiblity volumes.
     '''
     def __init__(self, numSamples, numPhi, phiRange, headingStrategy):
         '''
@@ -27,31 +28,28 @@ class Edge3dSampleStrategy(SampleStrategy[Region]):
         phiRange: list[float]
             acceptable range of pitch angles
         '''
-        super().__init__(headingStrategy)
-        self.numSamples = numSamples
+        super().__init__(numSamples, headingStrategy)
         self.numPhi = numPhi
         self.phiRange = phiRange
 
-    def getSamples(self, polygons: Iterator[Region]) -> 'list[Vertex3D]':
+    def sampleMeshes(self, volumes: 'list[Volume]', meshes: 'list[pv.PolyData]', regions: 'list[Region]') -> 'list[VertexMulti]':
         samples = []
-        regions = list(polygons)
-
-        for group, mesh in enumerate(iterateRegions(regions, RegionType.WAVEFRONT)):
-            _, _, _, _, zMin, zMax = mesh.bounds
+        for volume in volumes:
+            _, _, _, _, zMin, zMax = volume.volume.bounds
             z = (zMax - zMin) * OFFSET + zMin
-            polygon = polygonFromBody(z, mesh, cutoff=POLYGON_CUTOFF)
-            if not polygon:
-                raise SamplingFailedException(f'failed to slice mesh {group}')
-            s = self._sampleSlice(self.numSamples, polygon, z, group)
+            polygon = polygonFromBody(z, volume.volume, cutoff=INTERSECTION_CUTOFF)
+            if polygon is None:
+                raise SamplingFailedException(f'failed to sample {volume.parents}')
+            s = self._sampleSlice(volume.samples, polygon, z, volume.parents[0], volume.parents)
             samples += s
         return samples
 
-    def _sampleSlice(self, numPoints, polygon, z, group):
+    def _sampleSlice(self, numPoints, polygon, z, group, visits):
         samples = []
         pointsIndex = 0
         remainingSamples = numPoints * self.headingStrategy.numHeadings * self.numPhi
-        i = 0
         lr = remainingSamples
+        i = 0
         while remainingSamples > 0 and i < LIMIT:
             points = getPointsOnEdge(pointsIndex, int(np.ceil(remainingSamples / (self.headingStrategy.numHeadings * self.numPhi))), polygon)
             pointsIndex += numPoints
@@ -62,8 +60,9 @@ class Edge3dSampleStrategy(SampleStrategy[Region]):
                         if remainingSamples <= 0:
                             return samples
                         phi = self.phiRange[0] + phiMag * n / (self.numPhi)
-                        samples.append(Vertex3D(
-                            group=str(group),
+                        samples.append(Vertex3DMulti(
+                            group=group,
+                            visits=set(map(str, visits)),
                             x=point[0],
                             y=point[1],
                             z=z,

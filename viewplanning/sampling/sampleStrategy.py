@@ -1,6 +1,7 @@
 from typing import Generic, TypeVar, Iterator
 from viewplanning.models import Vertex
-import numpy as np
+from viewplanning.sampling.heading import HeadingStrategy
+
 
 T = TypeVar('T')
 
@@ -10,8 +11,8 @@ class SampleStrategy(Generic[T]):
     Super class for the different sample stratgies.
     '''
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, headingStrategy: HeadingStrategy) -> None:
+        self.headingStrategy = headingStrategy
 
     def getSamples(self, regions: 'Iterator[T]') -> 'list[Vertex]':
         '''

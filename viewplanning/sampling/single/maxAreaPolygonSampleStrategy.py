@@ -14,22 +14,17 @@ class MaxAreaPolygonSampleStrategy(SampleStrategy):
     Does obermeyer 2d sampling at maximum area slice that goes through all view volumes
     """
 
-    def __init__(self, numSamples, numAngles):
+    def __init__(self, numSamples, headingStrategy):
         '''
         Parameters
         ----------
         numSamples: int
             number of (x, y, z) samples per volume
-        numTheta: int
-            number of heading angles per (x, y, z) sample
-        numPhi: int
-            number of pitch anlges per (X, y, z, theta) sample
-        phiRange: list[float]
-            acceptable range of pitch angles
+        headingStrategy: HeadingStrategy
+            how to allocate headings to the samples theta
         '''
-        super().__init__()
+        super().__init__(headingStrategy)
         self.matrixEdge = int(np.floor(np.sqrt(numSamples)))
-        self.numAngles = numAngles
 
     def getSamples(self, bodies: 'Iterator[Region]') -> 'list[Vertex2D]':
         points = []
@@ -61,10 +56,14 @@ class MaxAreaPolygonSampleStrategy(SampleStrategy):
             if polygon is None:
                 raise SamplingFailedException('Couldn\'t slice mesh into polygon')
             xMin, yMin, xMax, yMax = polygon.bounds
+            k = 0
             for x in np.linspace(xMin, xMax, self.matrixEdge):
                 for y in np.linspace(yMin, yMax, self.matrixEdge):
                     if not containsPoint2d([x, y], polygon):
                         continue
-                    for theta in np.linspace(0, 2 * np.pi * (self.numAngles - 1) / self.numAngles, self.numAngles):
+                    for theta in self.headingStrategy.getHeadings(np.array([x, y, zhat]), polygon=polygon):
+                        k += 1
                         points.append(Vertex2D(group=str(group), x=x, y=y, theta=theta))
+            if k <= 0:
+                raise SamplingFailedException('No grid points inside polygon')
         return points

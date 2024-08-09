@@ -17,7 +17,6 @@ class SampleStrategyIntersection(IntEnum):
     UNKNOWN = 0
     NON_INTERSECTING = 1
     SIMPLE_INTERSECTION = 2
-    CLIQUE_INTERSECTION = 3
     BRUTE_INTERSECTION = 4
 
 
