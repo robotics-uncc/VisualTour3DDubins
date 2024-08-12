@@ -27,6 +27,7 @@ def run(experiment, writeQueue):
         queue to place the experiemntal result on
     '''
     _run(Experiment.from_dict(experiment), writeQueue, dryRun=False)
+    return 0
 
 
 class TestExperiments(Subapplication):
@@ -95,9 +96,17 @@ class TestExperiments(Subapplication):
                 time.sleep(1.0)
 
             def anyAlive(processes: 'list[Process]'):
-                return sum([process.is_alive() for process in processes]) > 0
+                count = 0
+                for process in processes:
+                    try:
+                        count += 1 if process.is_alive() else 0
+                    except:
+                        pass
+                return count > 0
 
             while anyAlive(processes):
+                while not writeQueue.empty():
+                    resultStore.insertItem(writeQueue.get())
                 time.sleep(1.0)
         else:
             for exp in experiments:
