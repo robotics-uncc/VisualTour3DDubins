@@ -6,6 +6,10 @@ from viewplanning.sampling import containsPoint3d
 
 
 class StartPointVerification(VerificationStrategy):
+    '''
+    Checks start points to see if they are contained by a view volume
+    '''
+
     def verify(self, edges: 'list[Edge]', bodies: 'list[Region]', **kwargs) -> bool:
         if not super().verify(edges, bodies):
             return False

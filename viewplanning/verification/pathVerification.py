@@ -5,7 +5,12 @@ from viewplanning.sampling import polygonFromBody, containsPoint2d
 from viewplanning.plotting import makePath3d
 import numpy as np
 
+
 class PathVerification(VerificationStrategy):
+    '''
+    checks paths to make sure they intersect with view volumes
+    '''
+
     def verify(self, edges: 'list[Edge]', bodies: 'list[Region]', radius: float, **kwargs) -> bool:
         if not super().verify(edges, bodies, radius):
             return False
@@ -29,6 +34,6 @@ class PathVerification(VerificationStrategy):
                     containedPoint = containedPoint or (polygons[key] is not None and containsPoint2d(point[:2], polygons[key]))
                     if containedPoint:
                         verified[i] = True
-                        break       
+                        break
 
         return sum(verified)

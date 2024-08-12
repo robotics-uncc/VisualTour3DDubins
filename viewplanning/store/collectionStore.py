@@ -157,10 +157,31 @@ class MongoCollectionStore(CollectionStore[T]):
         return [self.factory(item) for item in items]
 
     def find(self, search):
+        '''
+        search mongodb
+
+        Parameters
+        ----------
+        search: dict
+            mongodb search dictionary
+        '''
         items = self.collection.find(search)
         return [self.factory(item) for item in items]
 
     def getItemsIterator(self, sort: dict = None, search: dict = None) -> 'Iterable[T]':
+        '''
+        iterate all items in the store
+
+        Parameters
+        ----------
+        sort: dict
+            optional sort for mongodb
+
+        Returns
+        -------
+        Iterable[T]
+            iterable of items
+        '''
         if search is None:
             iterator = self.collection.find()
         else:
@@ -171,6 +192,19 @@ class MongoCollectionStore(CollectionStore[T]):
             yield self.factory(item)
 
     def getItemById(self, id) -> 'T':
+        '''
+        search mongodb for a specific item
+
+        Parameters
+        ----------
+        id: UUID
+            id of the object to get
+
+        Returns
+        -------
+        T | None
+            None if the item doesn't exist
+        '''
         items = self.collection.find({'_id': id}).limit(1)
         lst = [self.factory(item) for item in items]
         if len(lst) > 0:
@@ -178,6 +212,19 @@ class MongoCollectionStore(CollectionStore[T]):
         return None
 
     def hasId(self, id):
+        '''
+        does the database contain an id
+
+        Parameters
+        ----------
+        id: UUID
+            id to check
+
+        Returns
+        -------
+        bool
+            True if the id exists, False if the id doesn't exist
+        '''
         items = self.collection.find({'_id': id})
         if next(items, None) is None:
             return False

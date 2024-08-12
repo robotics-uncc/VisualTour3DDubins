@@ -5,12 +5,18 @@ from bson.codec_options import CodecOptions
 from bson.binary import STANDARD
 
 
+
 class MongoFactory:
-    '''create a mongodb connection'''
+    '''
+    Singleton mehtod for creating connections to the mongodb database
+    '''
     _instances = {}
 
     @staticmethod
-    def getDatabase():
+    def getMongoClient():
+        '''
+        get a mongodb client
+        '''
         pid = os.getpid()
         if pid not in MongoFactory._instances:
             config = ConfigurationFactory.getInstance()['database']['mongo']
