@@ -3,6 +3,8 @@ import pyvista as pv
 from viewplanning.models import Region, Edge3D, Vertex3D
 from .pathPlotter import SolutionPlotter
 from viewplanning.edgeSolver import makeCurve
+import matplotlib.pyplot as plt
+import matplotlib.image
 """
 Authors
 -------
@@ -19,6 +21,7 @@ class SolutionPlotter3dPyvista(SolutionPlotter):
 
     def __init__(self, environment: pv.PolyData):
         self.environment = environment
+        self.image = None
 
     def plot(self, volumes: 'list[Region]', edges: 'list[Edge3D]', **kwargs):
         """
@@ -35,7 +38,7 @@ class SolutionPlotter3dPyvista(SolutionPlotter):
         paths: list[DubinsPaths]
             list of paths for the vehicle to follow
         """
-        plotter = pv.Plotter()
+        plotter = pv.Plotter(off_screen=True)
         if self.environment is not None:
             plotter.add_mesh(self.environment, color='gray')
         i = 0
@@ -63,7 +66,13 @@ class SolutionPlotter3dPyvista(SolutionPlotter):
             plotter.add_mesh(vv, color='white', show_edges=True, opacity=.2)
             s = pv.Sphere(radius=5, center=volume.points[0])
             plotter.add_mesh(s, color='red')
-        plotter.show()
+        self.image = plotter.show(screenshot=True)
+        fig = plt.figure()
+        ax = fig.add_subplot()
+        ax.imshow(self.image)
+        ax.set_axis_off()
+        fig.tight_layout()
+        plt.show()
 
-    def savePlot(self, path):
-        pass
+    def savePlot(self, name):
+        matplotlib.image.imsave(name, self.image)

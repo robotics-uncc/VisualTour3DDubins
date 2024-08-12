@@ -23,4 +23,4 @@ conda env create -n viewplanning --file ../environment.yaml
 cd ../dubinsrust
 ./build.sh
 
-cd ../../../deploy
+cd ../deploy

@@ -1,12 +1,12 @@
 from viewplanning.models import Experiment, SampleStrategyType, Etsp2DtspType, VerificationType, SampleStrategyIntersection, SampleStrategyRecord, HeadingStrategyType, EdgeStrategyType, EdgeStrategyRecord, EdgeModification
 from viewplanning.solvers.dubinsSolverBuilder import DubinsSolverBuilder
 from viewplanning.sampling.single import BodySampleStrategy, PointSampleStrategy, FaceSampleStrategy, GlobalPerimeterWeightedFaceSampleStrategy, MaxAreaEdgeSampleStrategy, MaxAreaPolygonSampleStrategy, Edge3dSampleStrategy
-from viewplanning.sampling.multi import IntersectingFaceSampling, IntersectingEdge3DSampling, IntersectingGlobalWeightedFaceSampling, IntersectingMaxAreaEdgeSampling, IntersectingVolumeSampling, SimpleIntersectingVolumeSampling, BruteVolumeSampling
+from viewplanning.sampling.multi import IntersectingFaceSampling, IntersectingEdge3DSampling, IntersectingGlobalWeightedFaceSampling, IntersectingMaxAreaEdgeSampling, SimpleIntersectingVolumeSampling, BruteVolumeSampling
 from viewplanning.sampling.heading import UniformHeadings, InwardPointingHeadings, StraightDwellHeadings
 from viewplanning.edgeSolver.etsp2dtsp import Etsp2Dtsp, Alternating, AlternatingBisector, AngleBisector
 from viewplanning.verification import VerificationStrategy, PathVerification, StartPointVerification
 from viewplanning.dubins import RustVanaAirplane, RustDubinsCar
-from viewplanning.edgeSolver import RayTracedHeuristicEdge, DubinsAirplaneEdge, DubinsCarEdge, DwellStraight, HeuristicEdge, RayTracedAirplaneEdge, LeadInDwell
+from viewplanning.edgeSolver import DubinsAirplaneEdge, DubinsCarEdge, DwellStraight, HeuristicEdge, LeadInDwell
 from viewplanning.tsp import OverlappingTspSubprocess
 from math import pi
 import logging
@@ -31,8 +31,7 @@ def makeSolver(experiment: Experiment):
         .setEdgeSolver(makeEdgeSolver(experiment.edgeStrategy, experiment.sampleStrategy)) \
         .setId(experiment._id)
 
-    if (experiment.sampleStrategy.intersection.type == SampleStrategyIntersection.CLIQUE_INTERSECTION 
-            or experiment.sampleStrategy.intersection.type == SampleStrategyIntersection.SIMPLE_INTERSECTION 
+    if (experiment.sampleStrategy.intersection.type == SampleStrategyIntersection.SIMPLE_INTERSECTION
             or experiment.sampleStrategy.intersection.type == SampleStrategyIntersection.BRUTE_INTERSECTION):
         builder.setTSPSolver(OverlappingTspSubprocess())
 
@@ -114,7 +113,7 @@ def makeStrategySingle(sample: SampleStrategyRecord):
 def makeHeadingStrategy(sample: SampleStrategyRecord):
     '''
         factory method for making a method to sample heading for visilibity volume samples
-    
+
     Parameters
     ----------
     sample: SampleStartegyRecord
@@ -205,7 +204,9 @@ def makeEdgeSolver(edgeRecord: EdgeStrategyRecord, sampleRecord: SampleStrategyR
         )
 
     if edgeRecord.modification == EdgeModification.DWELL:
-        edge = DwellStraight(edgeRecord.dwellDistance, edge, sampleRecord.heading.multiplyDwell)
+        edge = DwellStraight(edgeRecord.dwellDistance, edge,
+                             sampleRecord.heading.multiplyDwell)
     if edgeRecord.modification == EdgeModification.LEAD_IN_DWELL:
-        edge = LeadInDwell(edgeRecord.leadDistance, edgeRecord.dwellDistance, edge, sampleRecord.heading.multiplyDwell)
+        edge = LeadInDwell(edgeRecord.leadDistance, edgeRecord.dwellDistance,
+                           edge, sampleRecord.heading.multiplyDwell)
     return edge

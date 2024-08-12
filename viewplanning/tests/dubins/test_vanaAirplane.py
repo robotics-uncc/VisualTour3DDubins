@@ -38,7 +38,8 @@ def testSpeed():
     end = Vertex3D(x=500, y=800, z=0, theta=np.pi / 4, phi=np.pi / 12)
     start = Vertex3D(x=-300, y=1200, z=350, theta=8 * np.pi / 9, phi=0)
     end = Vertex3D(x=1000, y=200, z=0, theta=np.pi / 6, phi=0)
-    start = Vertex3D(x=-500, y=-300, z=600, theta=5 * np.pi / 6, phi=np.pi / 36)
+    start = Vertex3D(x=-500, y=-300, z=600, theta=5 *
+                     np.pi / 6, phi=np.pi / 36)
     end = Vertex3D(x=1200, y=900, z=100, theta=5 * np.pi / 3, phi=np.pi / 36)
 
 
@@ -151,10 +152,14 @@ def testHigh():
 
 
 def plot(edge: Edge3D):
-    x, y, z = makeCurve(edge, n=1000)
+    curve = makeCurve(edge, n=1000)
+    x = curve[:, 0]
+    y = curve[:, 1]
+    z = curve[:, 2]
     fig, ax = plt.subplots(1, 2)
     ax[0].plot(x, y)
     ax[0].quiver([edge.start.x, edge.end.x], [edge.start.y, edge.end.y], np.cos(
         [edge.start.theta, edge.end.theta]), np.sin([edge.start.theta, edge.end.theta]))
-    ax[1].plot(np.linspace(0, edge.aParam + edge.bParam + edge.cParam, len(z)), z)
+    ax[1].plot(np.linspace(0, edge.aParam +
+               edge.bParam + edge.cParam, len(z)), z)
     plt.show()

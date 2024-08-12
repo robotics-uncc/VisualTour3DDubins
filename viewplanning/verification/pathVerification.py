@@ -2,7 +2,7 @@ from viewplanning.verification.verificationStrategy import VerificationStrategy
 from viewplanning.models import RegionType, Region, Edge
 from viewplanning.store import readObj
 from viewplanning.sampling import polygonFromBody, containsPoint2d
-from viewplanning.plotting import makePath3d
+from viewplanning.edgeSolver import makeCurve
 import numpy as np
 
 
@@ -23,7 +23,7 @@ class PathVerification(VerificationStrategy):
                 if region.type != RegionType.WAVEFRONT_VRIO or verified[i]:
                     continue
                 obj = readObj(region.verificationRegion, region.rotationMatrix)
-                x, y, z = makePath3d(edge)
+                x, y, z = makeCurve(edge)
                 points = np.stack([x, y, z], axis=1)
                 containedPoint = False
                 for point in points:
@@ -31,7 +31,8 @@ class PathVerification(VerificationStrategy):
                     key = str(z) + '_' + str(i)
                     if key not in polygons.keys():
                         polygons[key] = polygonFromBody(z, obj)
-                    containedPoint = containedPoint or (polygons[key] is not None and containsPoint2d(point[:2], polygons[key]))
+                    containedPoint = containedPoint or (
+                        polygons[key] is not None and containsPoint2d(point[:2], polygons[key]))
                     if containedPoint:
                         verified[i] = True
                         break

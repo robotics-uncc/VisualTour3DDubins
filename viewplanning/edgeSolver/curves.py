@@ -7,7 +7,7 @@ from typing import Callable
 def dwellStraightCurve(edge: DwellStraightEdge):
     """
     return a path function for a dubins curve with a straight segment at the start where the input t is in [0, 1]
-        
+
     Paramters
     ---------
     path: DwellStraightEdge
@@ -35,7 +35,7 @@ def dwellStraightCurve(edge: DwellStraightEdge):
 def leadInDwellCurve(edge: LeadInDwellEdge):
     """
     return a path function for a dubins curve with a straight segment at the start and end where the input t is in [0, 1]
-        
+
     Paramters
     ---------
     path: LeadIndwellEdge
@@ -77,8 +77,10 @@ def vanaAirplaneCurve(path: Edge3D) -> Callable[[float], np.ndarray]:
     f(float) -> ndarray
         return mapping to 3d point in space
     """
-    xyFunction = dubinsCurve2d([path.start.x, path.start.y, path.start.theta], path.aParam, path.bParam, path.cParam, path.radius, path.pathType)
-    szFunction = dubinsCurve2d([0, path.start.z, path.start.phi], path.dParam, path.eParam, path.fParam, path.radiusSZ, path.pathTypeSZ)
+    xyFunction = dubinsCurve2d([path.start.x, path.start.y, path.start.theta],
+                               path.aParam, path.bParam, path.cParam, path.radius, path.pathType)
+    szFunction = dubinsCurve2d([0, path.start.z, path.start.phi], path.dParam,
+                               path.eParam, path.fParam, path.radiusSZ, path.pathTypeSZ)
 
     def f(t):
         xy = xyFunction(t)
@@ -132,13 +134,15 @@ def dubinsCurve2d(s: np.ndarray, a, b, c, r, type: DubinsPathType):
     j = maneuverToDir(type.name[1])
     k = maneuverToDir(type.name[2])
     s1 = r * i * np.array([-np.sin(s[2]), np.cos(s[2])]) + s[:2] + r * \
-        np.array([np.cos(i * a / r + s[2] - i * np.pi / 2), np.sin(i * a / r + s[2] - i * np.pi / 2)])
+        np.array([np.cos(i * a / r + s[2] - i * np.pi / 2),
+                 np.sin(i * a / r + s[2] - i * np.pi / 2)])
     h1 = i * a / r + s[2]
     if j == 0:
         s2 = s1 + b * np.array([np.cos(h1), np.sin(h1)])
         h2 = h1
     else:
-        s2 = s1 + r * j * np.array([-np.sin(h1), np.cos(h1)]) + r * np.array([np.cos(j * b / r + h1 - j * np.pi / 2), np.sin(j * b / r + h1 - j * np.pi / 2)])
+        s2 = s1 + r * j * np.array([-np.sin(h1), np.cos(h1)]) + r * np.array(
+            [np.cos(j * b / r + h1 - j * np.pi / 2), np.sin(j * b / r + h1 - j * np.pi / 2)])
         h2 = h1 + j * b / r
 
     def f(t):
@@ -146,7 +150,8 @@ def dubinsCurve2d(s: np.ndarray, a, b, c, r, type: DubinsPathType):
         if t < a:
             p0 = r * i * np.array([-np.sin(s[2]), np.cos(s[2])])
             p1 = s[:2]
-            p2 = r * np.array([np.cos(i * t / r + s[2] - i * np.pi / 2), np.sin(i * t / r + s[2] - i * np.pi / 2)])
+            p2 = r * np.array([np.cos(i * t / r + s[2] - i * np.pi / 2),
+                              np.sin(i * t / r + s[2] - i * np.pi / 2)])
             return p0 + p1 + p2
         if t >= a and t < a + b and j == 0:
             u = t - a
@@ -155,12 +160,14 @@ def dubinsCurve2d(s: np.ndarray, a, b, c, r, type: DubinsPathType):
             u = t - a
             p0 = r * j * np.array([-np.sin(h1), np.cos(h1)])
             p1 = s1
-            p2 = r * np.array([np.cos(j * u / r + h1 - j * np.pi / 2), np.sin(j * u / r + h1 - j * np.pi / 2)])
+            p2 = r * np.array([np.cos(j * u / r + h1 - j * np.pi / 2),
+                              np.sin(j * u / r + h1 - j * np.pi / 2)])
             return p0 + p1 + p2
         u = t - b - a
         p0 = r * k * np.array([-np.sin(h2), np.cos(h2)])
         p1 = s2
-        p2 = r * np.array([np.cos(k * u / r + h2 - k * np.pi / 2), np.sin(k * u / r + h2 - k * np.pi / 2)])
+        p2 = r * np.array([np.cos(k * u / r + h2 - k * np.pi / 2),
+                          np.sin(k * u / r + h2 - k * np.pi / 2)])
         return p0 + p1 + p2
 
     return f
@@ -197,6 +204,10 @@ def makeCurve(edge: Edge, n=100):
         edge to make a curve for
     n: int
         number of point along the curve
+
+    Returns
+    -------
+    np.ndarray
     '''
     if edge.type == EdgeType.TWO_D:
         f = dubinsCurve(edge)

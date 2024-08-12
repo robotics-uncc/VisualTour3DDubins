@@ -79,7 +79,7 @@ class Node:
         self.end = end
 
 
-def polygonFromBody(zLevel: float, mesh: pv.PolyData) -> Polygon:
+def polygonFromBody(zLevel: float, mesh: pv.PolyData, cutoff=APPROX_ZERO, debug=False) -> Polygon:
     """
     slices a mesh along a plane parallel to xy plane at height zLevel and returns the largest polygon.
 
@@ -221,7 +221,8 @@ def polygonsFromMesh(zLevel: float, mesh: pv.PolyData, cutoff: float = APPROX_ZE
         if len(ps) < 3:
             continue
         polygon = np.array(orient(Polygon(shell=ps)).exterior.coords)[:-1]
-        theta = (np.arctan2(polygon[:, 1], polygon[:, 0]) + 2 * np.pi) % (2 * np.pi)
+        theta = (np.arctan2(polygon[:, 1],
+                 polygon[:, 0]) + 2 * np.pi) % (2 * np.pi)
         index = np.argmin(theta)
         polygon = np.roll(polygon, -index, axis=0)
         polygons.append(Polygon(polygon))
@@ -330,12 +331,12 @@ class IdProvider:
 def getAngle(i):
     '''
         Get a unique number between 0 and 2 not inclusive in the pattern 0, 1, .5, 1.5, .25, .75, 1.25, 1.75 ...
-    
+
     Parameters
     ----------
     i: int
         index into the sequence
-    
+
     Returns
     -------
     float
@@ -364,12 +365,13 @@ def getPointsOnEdge(startIndex: int, numPoints: int, polygon: Polygon):
         number of point along the polygon to return
     polygon: Polygon
         the polygon who's perimeter to place points on
-    
+
     Returns
     -------
     list[float]
     '''
-    fracs = [getAngle(i) / 2 for i in range(startIndex, startIndex + numPoints)]
+    fracs = [getAngle(i) / 2 for i in range(startIndex,
+                                            startIndex + numPoints)]
     fracs.sort()
     perimeter = polygon.exterior.length
     segments = np.array(polygon.exterior.coords)

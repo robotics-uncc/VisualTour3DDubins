@@ -1,4 +1,4 @@
-from .intersectingVolumeSampling import MultiSampleStrategy, Volume
+from .helpers import MultiSampleStrategy, Volume
 from viewplanning.sampling.sampleHelpers import polygonFromBody, SamplingFailedException, getPointsOnEdge
 from viewplanning.models import Region, VertexMulti, Vertex2DMulti
 from viewplanning.sampling.heading import HeadingStrategy
@@ -14,6 +14,7 @@ class IntersectingMaxAreaEdgeSampling(MultiSampleStrategy):
     Does obermeyer 2d sampling at global area maximum or minimum at highest view volume.
     Considers the intersecion of visibility volumes
     """
+
     def __init__(self, numSamples, headingStrategy: HeadingStrategy):
         '''
         Parameters
@@ -53,7 +54,8 @@ class IntersectingMaxAreaEdgeSampling(MultiSampleStrategy):
             if polygon is None:
                 raise SamplingFailedException(
                     f'Couldn\'t slice mesh into polygon at z level {zhat}')
-            s = self._sampleSlice(self.numSamples, polygon, volume.parents[0], volume.parents)
+            s = self._sampleSlice(self.numSamples, polygon,
+                                  volume.parents[0], volume.parents)
             samples += s
 
         return samples
@@ -63,7 +65,8 @@ class IntersectingMaxAreaEdgeSampling(MultiSampleStrategy):
         pointsIndex = 0
         remainingSamples = numPoints * self.headingStrategy.numHeadings
         while remainingSamples > 0:
-            points = getPointsOnEdge(pointsIndex, int(np.ceil(remainingSamples / (self.headingStrategy.numHeadings))), polygon)
+            points = getPointsOnEdge(pointsIndex, int(
+                np.ceil(remainingSamples / (self.headingStrategy.numHeadings))), polygon)
             pointsIndex += numPoints
             for point in points:
                 for theta in self.headingStrategy.getHeadings(np.array([point[0], point[1], z]), polygon=polygon):

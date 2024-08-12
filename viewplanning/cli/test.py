@@ -14,6 +14,7 @@ import os
 
 TEMP_DIR = 'data/tmp/'
 
+
 def run(experiment, writeQueue):
     '''
     run an experiment and place the result on the writeQueue
@@ -32,6 +33,7 @@ class TestExperiments(Subapplication):
     '''
     Inserts text experiments into database and runs them
     '''
+
     def __init__(self):
         super().__init__('test')
         self.description = 'Load a small set of experiments into the database and execute them.'
@@ -39,7 +41,7 @@ class TestExperiments(Subapplication):
     def run(self, args):
         config = ConfigurationFactory.getInstance()
         storeFactory = CollectionStoreFactory()
-        
+
         if not os.path.exists(TEMP_DIR):
             os.mkdir(TEMP_DIR)
         logging.info('Loading Experiments')
@@ -53,7 +55,8 @@ class TestExperiments(Subapplication):
                     regionStore.insertItem(group)
         regionStore.close()
 
-        experimentStore = storeFactory.getStore('experiments', Experiment.from_dict)
+        experimentStore = storeFactory.getStore(
+            'experiments', Experiment.from_dict)
         with open('./data/test/experiments.json') as f:
             experiments = json.load(f)
             for experiment in experiments:
@@ -71,8 +74,10 @@ class TestExperiments(Subapplication):
 
         logging.info("Starting Experiments")
         if config['process']['multithreading']:
-            cpus = min(floor(os.cpu_count() * .7), os.cpu_count() - 1, len(experiments))  # don't take all cores
-            processes = [Process(target=run, args=[experiments.pop(), writeQueue]) for i in range(cpus)]
+            cpus = min(floor(os.cpu_count() * .7), os.cpu_count() -
+                       1, len(experiments))  # don't take all cores
+            processes = [
+                Process(target=run, args=[experiments.pop(), writeQueue]) for i in range(cpus)]
             for process in processes:
                 process.start()
             while len(experiments) > 0:
@@ -81,7 +86,8 @@ class TestExperiments(Subapplication):
                         processes[i].close()
                         t = processes[i]
                         if len(experiments) > 0:
-                            processes[i] = Process(target=run, args=[experiments.pop(), writeQueue])
+                            processes[i] = Process(
+                                target=run, args=[experiments.pop(), writeQueue])
                             processes[i].start()
                         del t
                         while not writeQueue.empty():
@@ -97,7 +103,8 @@ class TestExperiments(Subapplication):
             for exp in experiments:
                 run(exp, writeQueue)
 
-            while not writeQueue.empty():
-                resultStore.insertItem(writeQueue.get())
+        while not writeQueue.empty():
+            resultStore.insertItem(writeQueue.get())
+        resultStore.close()
 
         logging.info('Finished all experiments')

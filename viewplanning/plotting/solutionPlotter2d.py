@@ -6,7 +6,7 @@ import geopandas as gpd
 import numpy as np
 from viewplanning.edgeSolver import makeCurve
 from viewplanning.plotting.pathPlotter import SolutionPlotter
-from viewplanning.models import Edge2D, Vertex2D, Region
+from viewplanning.models import Edge2D, Vertex2D, Region, RegionType
 from viewplanning.sampling import iterateRegions
 
 
@@ -50,7 +50,10 @@ class SolutionPlotter2dRegions(SolutionPlotter):
         theta = [vertex.theta for vertex in samples]
         ax.quiver(x, y, np.cos(theta), np.sin(theta), width=.0025)
 
-    def _plotRegions(self, regions: 'Iterator[Region]', ax: plt.Axes):
-        for region in iterateRegions(regions):
-            p = gpd.GeoSeries(region)
-            p.plot(ax=ax, facecolor='g', edgecolor='k', alpha=.5)
+    def _plotRegions(self, regions: 'list[Region]', ax: plt.Axes):
+        for i, region in enumerate(iterateRegions(regions)):
+            if regions[i].type == RegionType.POLYGON:
+                p = gpd.GeoSeries(region)
+                p.plot(ax=ax, facecolor='g', edgecolor='k', alpha=.5)
+            elif regions[i].type == RegionType.POINT:
+                ax.scatter([region[0][0]], [region[0][1]], color='g')

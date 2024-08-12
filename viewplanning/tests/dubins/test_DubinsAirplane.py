@@ -435,8 +435,10 @@ def testFailedToConverge():
 
 
 def plot(edge: Edge3D):
-    x, y, z = makeCurve(edge, n=1000)
+    curve = makeCurve(edge, n=1000)
     fig, ax = plt.subplots(1, 1)
+    x = curve[:, 0]
+    y = curve[:, 1]
     ax.plot(x, y)
     ax.quiver([edge.start.x, edge.end.x], [edge.start.y, edge.end.y], np.cos(
         [edge.start.theta, edge.end.theta]), np.sin([edge.start.theta, edge.end.theta]))
